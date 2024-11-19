@@ -1,0 +1,2111 @@
+1
+
+Typology meets statistical modeling: the German gender system
+
+2
+
+Typology meets statistical modeling: the German gender system
+
+Sebastian Fedden (Université Sorbonne Nouvelle/LACITO; Ludwig-Maximilians-Universität
+München; University of Surrey); sebastian.fedden@sorbonne-nouvelle.fr;
+sebastian.fedden@lmu.de
+Matías Guzmán Naranjo (Universität Freiburg); mguzmann89@gmail.com
+Greville G. Corbett (University of Surrey); g.corbett@surrey.ac.uk
+
+3
+
+Abstract: The German gender system is known for its complexity, and there is a persistent
+misconception that it is largely arbitrary, and hence a challenge for the typology of gender
+systems. In response, we construct a database of more than 30,000 German nouns, and show that
+a Boosting Tree model achieves a predictive success of 96%. Even more surprisingly, the model
+performs at 87% when trained on just the 100 most frequent nouns. We thus demonstrate that the
+complex German system fits into a typologically well-known scheme, being a combination of
+semantic and formal assignment principles. Besides our success with the specific problem, we
+show the value of statistical modeling for typologists, and reflect on what exactly we can learn
+from these techniques.
+*Versions of this paper were read at the MultiGender Workshop ‘A Multilingual Approach to
+Grammatical Gender’, Centre for Advanced Study, Oslo 2020, at the 53rd Annual Meeting of the
+Societas Linguistica Europaea, Bucharest (online) 2020, at the 54th Annual Meeting of the
+Societas Linguistica Europaea 2021, Athens (online), and at the International Symposium of
+Morphology (ISMo), Paris (online) 2021. We thank members of those audiences for their
+comments. We are grateful to colleagues who offered helpful suggestions, and those who read
+and commented on drafts of the paper: Jenny Audring, Matthew Baerman, Laura Becker, Sacha
+Beniamine, Dunstan Brown, Johannes Dellert, Hans-Olav Enger, Sebastian Kürschner, Barbara
+Schlücker, and Anna Thornton. We thank Olivier Bonami for suggesting this collaboration, and
+Lisa Mack and Penny Everson for their help with the preparation of the manuscript. Our special
+thanks go to the Editors of Language Andries Coetzee and John Beavers, the Co-Editor Shelome
+Gooden, Associate Editor Titus von der Malsburg, and the two referees, Harald Baayen and an
+anonymous referee, for their sustained constructive engagement with the paper. Financial
+support from the ESRC (grant ES/R00837X/1 ‘Optimal categorization: the origin and nature of
+gender from a psycholinguistic perspective’), from the Emmy Noether project (grant 504155622
+‘Bayesian modelling of spatial typology’), and the Centre for Advanced Study, Oslo is gratefully
+acknowledged. Ce travail a bénéficié d'une aide de l’Etat gérée par l'Agence Nationale de la
+Recherche au titre du programme ‘Investissements d’Avenir’ portant la référence ANR-10LABX-0083. Il contribue à l’IdEx Université de Paris - ANR-18-IDEX-0001.
+
+Keywords: assignment rules, statistical modeling, gender, German, morphosyntax, typology
+
+4
+
+1. INTRODUCTION. In recent years linguistic typology has increasingly profited from statistical
+modeling; the hope is to discover patterns in large datasets more quickly and more accurately
+than would be possible for a human researcher. A linguistic system which could benefit from
+such an approach is German gender, which from a typological perspective is unusually complex.
+
+1.1. GERMAN AS A TYPOLOGICAL GEM. German gender has complex gender assignment
+principles, as western European languages do in general (for discussion see Enger (2009) on
+Norwegian, Audring (2014) on Dutch, Audring (2023) on Germanic in general, and Bonami,
+Guzmán Naranjo, and Tribout (2019) on French, among others). By gender assignment
+principles we mean the generalizations which allow the gender of a noun to be inferred from
+other necessary information, i.e. its meaning, its phonological shape and its morphological
+structure and inflection. A recent compilation of factors (Corteen 2018:58) lists no fewer than
+378 semantic and formal assignment principles mentioned in the literature on German gender
+assignment, some in conflict with each other. And yet, of course, children learn the system (Mills
+1986) and, as in other gender languages, intuitions about gender assignment are remarkably
+consistent across speakers and they make few or no errors (Corbett 1991: 7; Corteen 2018: 5 and
+references there).
+The three gender values of German, masculine, feminine and neuter, are illustrated in (1).
+
+(1)
+
+a. der
+DEF.NOM.M.SG
+
+Film1
+film(M)[NOM.SG]
+
+‘the film’
+
+b. die
+DEF.NOM.F.SG
+
+Symphonie
+symphony(F)[NOM.SG]
+
+‘the symphony’
+
+c. das
+DEF.NOM.N.SG
+
+‘the book’
+
+Buch
+book(N)[NOM.SG]
+
+5
+
+This appears easy: many systems have more gender values than German. Furthermore, the basic
+semantic assignment principles are relatively straightforward, as we will see. But the system is a
+tangle of interacting semantic, morphological and phonological assignment principles. This
+typological gem keeps on offering partial results and then posing new questions.
+To make progress we interrogate a database of more than 30,000 German nouns, based on the
+CELEX database (Baayen, Piepenbrock, & Gulikers 1995), fully annotated for phonological
+shape, morphological structure, inflection class and semantics; we augment this by taking
+frequency information from the DECOW16b corpus (Schäfer & Bildhauer 2012; Schäfer 2015).
+We then induce the gender assignment principles from our dataset of German nouns using a
+Boosting Tree model (Chen et al. 2015).
+
+The paper is structured as follows. In §2 we establish the theoretical and typological frame for
+our study. In §3 we present the typology of gender assignment, introducing semantic assignment
+principles and formal assignment principles (derivation, inflection, phonological shape). This is
+followed in §4 by an overview of the essentials of gender in German, both in terms of realization
+and in terms of assignment. §5 introduces the new data and new methods used here. In §6 we
+discuss the overall results, highlighting the effects of frequency, and the issue of nested
+generalizations, where combinations of criteria make a prediction which neither of the individual
+criteria allow individually. Finally, in §7 we offer our conclusions, drawing together what we
+have learned about typology and statistical modeling.
+
+2. GERMAN GENDER ASSIGNMENT: STATE OF THE ART. Gender assignment principles are
+generalizations over lexical knowledge. The relevant literature was substantial already in the
+mid-1980s (Corbett 1986 lists over 75 items), see Corteen (2018) for a substantially larger recent
+listing. In our discussion, we will confine ourselves to key references.
+
+2.1. SPEAKER COMPETENCE. The evidence by which speakers learn the gender of nouns is
+provided by their agreement patterns (illustrated in part in 1). To use a German noun, speakers
+require its gender value, along with the other information forming its lexical representation,
+which includes lexical semantics, information about morphological structure and inflection, and
+its phonological form. Some of these specifications are mutually reinforcing: thus, the
+
+6
+
+phonological form of a noun may offer predictions as to the way in which it inflects. Gender
+stands out, in that when systems are investigated in detail, gender proves to be predictable to a
+high degree from other lexical information. Hence while gender might be counted as an
+additional ‘cost’ in lexical storage, compared with languages with no gender, this is only
+apparent. This does not imply that speakers compute the gender value each time they use a noun;
+it seems highly likely that the gender of common items is stored. Yet, the gender assignment
+principles retain a role, in that such generalizations over the lexicon serve to maintain the
+integrity of lexical information. There are also situations in which speakers need to assign a
+gender value to new nouns, e.g. borrowings or nonce words in psycholinguistic experimentation,
+or when they hear a new noun in a context which does not provide gender cues (e.g. bare
+plurals). We assume that speakers assign a gender value based on the same generalizations which
+already structure their lexicon; in other words, such novel assignment is a window into the
+normal system of gender assignment. As we shall see, these gender assignment principles are
+generalizations based on semantic, morphological, and phonological information.
+2.2. ACQUISITION. The essential work on the acquisition of German gender is Mills’ fine study
+(1986); since then, there has been research on demanding aspects of the problem. There are
+helpful surveys of the literature, as in Binanzer (2017:43–101), Walter, Fritzsche, & Höhle
+(2021:747–9), and Kupisch, Geiss, et al. (2022:4–7). These demonstrate both interesting progress
+and, conversely, the large gaps in our understanding of the basic issue of how a monolingual
+German-speaking child comes to master the complex gender system so effectively. The
+importance of phonological cues is well documented in these papers, also in Szagun et al. (2007),
+but there is much more to be understood about the way in which other factors come to the fore
+(Kupisch, Mitrofanova, & Westergaard 2022). For gender congruency effects, see Sá-Leite et al.
+(2022 and references there).
+German gender is complex both in terms of the number of assignment principles and in terms
+of the interaction of these principles. Despite this, our model is highly successful for gender
+assignment. What we mean is that it accounts for how well L1 speakers deal with the system. L2
+speakers, on the other hand, often fail at gender assignment in German and other languages
+because they lack ability in statistical learning in general. We know that L2 speakers also
+struggle with other types of classification problem like inflection class assignment or selecting
+
+7
+
+the correct derivation process in cases of competition (Callies 2015, Dykstra-Pruim 2003,
+Schuhmann & Smith 2022). For all these problems, it has been shown that they are easily
+solvable by L1 speakers and that there are strong statistical tendencies much like for gender.
+
+2.3. GENDER DISTRIBUTION AND FREQUENCY. Given the complexity of the system, an important
+step is to put numbers to predictions. Gender distribution is a non-trivial issue since it crucially
+depends on the sample (see Opitz & Pechmann 2016:237). The overall distribution in our
+database of 30,576 nouns is given in Table 1 (in addition, 313 hybrids 2 were set aside because
+they do not have a consistent gender value; see Corbett (2012:85–8) and Corbett & Fedden
+(2016:517–9).
+
+<INSERT TABLE 1 ABOUT HERE>
+
+When evaluating predictors, we compare their accuracy to the overall distribution of nouns over
+the gender values. This allows us to ascertain that a predictor is contributing something. So a
+predictor is only of value if its accuracy is better than the baseline of 45% of feminine nouns.3
+Corpus frequency turns out to be important as well. The gender distribution for the most
+frequent nouns is different from the distribution we obtain if we add less frequent nouns. Thus,
+we take frequency into account when looking at the distribution of nouns across genders.
+Further, the most frequent items are the most exceptional ones (Bybee 1985; Wu et al. 2019).
+The clear hypothesis from this well-established fact is that they are therefore less good as input
+for learning gender. Our results disprove this hypothesis showing that our model achieves 87%
+accuracy when trained on just the 100 most frequent nouns.
+
+2.4. MODELING. There has been a good deal of work on gender assignment in German, notably
+by Klaus-Michael Köpcke and David Zubin on the role of semantics and phonology in gender
+assignment (Köpcke 1982; Köpcke & Zubin 1983, 1984, 1996, 2009; Zubin & Köpcke 1984);
+this fruitful line of enquiry which began in the 1980s has demonstrated clear regularities in the
+assignment of gender to German nouns. Their assignment rules are strictly ordered (and
+numbered): semantic rules apply first, then morphological rules, which they restrict to the way
+nouns inflect for plural, finally different types of phonological rule, which are carefully ordered
+
+8
+
+so that the most predictively successful rules apply first (Köpcke 1982:109–16). Phonological
+rules refer to onsets, e.g. /kn_/, codas, e.g. /_(C)ft/, combinations of coda and nucleus, e.g. /_ur/
+or phonotactic structure, e.g. /CC_CC/.
+Köpcke (1982) points out that for efficient gender assignment fewer rules would have been
+sufficient (his higher number rules typically do little work or do not come into play at all), but he
+says that rather than trying to develop “ein möglichst effektives Zuweisungsprogramm” [a
+maximally efficient assignment schema] he is concerned about the “Auffindung möglicherweise
+zugrunde liegender Lern- und Speicherungshilfen bei der Genuszuweisung durch den native
+speaker des Deutschen.” [identification of possibly underlying learning and storage aids in
+gender assignment by the native speaker of German – our translation] (p. 113). Köpcke
+conceives of gender assignment principles as mutually reinforcing learning and memory aids.
+Köpcke showed clearly that German gender assignment is not arbitrary, and this was a great
+contribution – against the prevailing wisdom of Bloomfield (1933:280) and others (see Corteen
+2018:2–3 for more recent suggestions that it is arbitrary). We now address some of the problems
+with his approach.
+First, there is the general issue that the overall accuracy of Köpcke’s rules (semantic, plural
+and phonological together) is rather low in relation to his sample. With an overall success rate of
+65.4% for all genders (Köpcke 1982:114), an efficient assignment system could have done with a
+single rule: all German nouns are masculine, which would yield a success rate of 64.12%, given
+Köpcke’s sample, which is based on DUDEN (a total of 1,466 monosyllabic nouns: 940
+masculine (64.12%); 205 feminine (13.98%); 321 neuter (21.9%). The success rate increases
+considerably, namely to 89.2%, if we allow equivocal situations; that is, if we allow a rule to
+predict not a single gender, but either of two genders, excluding the third. Again, we obtain
+almost the same accuracy (86%) if we simply just predict that German nouns are either
+masculine or neuter.
+Second, there are specific issues with the way the phonological rules are implemented in
+Köpcke (1982), which makes them less apt for use with our larger sample. We take up these
+points in more detail in section 4.3 on phonological assignment principles.
+Despite this analytical progress and the considerable typological interest of the German
+system, no attempt has been made to analyze the system as a whole, as has been done for
+example for other languages which rely on a combination of semantic and formal assignment
+
+9
+
+rules (see for example Corbett 1991:34–43, 57–62 for Russian and French). Usually, studies on
+German are restricted: either they are based on a small sample of nouns, e.g. 1,466 nouns in
+Köpcke (1982) and 592 nouns in Corteen (2018), or they are confined to a subset of gender
+predictors. An example of the latter type is a recent study by Basirat and colleagues (2021), who
+use a bespoke dataset constructed for the purpose of their study, but do not take morphological
+information (derivation, inflection class) into account. With a training set of tens of thousands of
+nouns), they reach an accuracy of 88% using phonology, and 87% with a model which combines
+phonology and semantics. Other studies like Nastase & Popescu (2009) look at two predictors,
+phonology and morphology, for German and Romanian but achieved an accuracy of only 72%
+for German and 78% for Romanian. Williams and colleagues (2019) instead solely look at the
+semantic contribution of gender assignment across 18 languages for a small subset of animate
+nouns, and find a clear semantic effect across all languages studied (see also Veeman 2020 for a
+discussion of contextualized embeddings). Neither of these approaches gives us a holistic
+account of gender assignment in German. It is evident that we need better data and better
+methods; overcoming these limitations is the challenge we take up here.
+Outside German, there has been considerable computational modeling work on gender
+assignment, too many studies for us to provide a comprehensive list. Well-known examples
+include Matthews (2010), who looks at French gender assignment using a memory-based learner
+(TiMBL) and finds that the final syllable segments are the best predictors of gender in French.
+The same memory-based framework is pursued by Durieux and colleagues (2000) investigating
+multiple lexical categories, including gender, leading to comparable results, and Eddington
+(2002) uses similar techniques to explore gender assignment in Spanish.
+
+2.5. OUR METHOD. We assume that assignment works by similarity; we therefore adopt a
+computational model which specifically relies on similarities. We represent the phonology of
+nouns as their similarity to their nearest masculine, feminine and neuter neighbors, using a
+modified Levenshtein distance. For semantics we also use a distance-based approach, calculating
+the semantic similarity between nouns based on the hypothesis that words with similar meanings
+share similar neighbors in a corpus. We compare this with lexical semantic information from our
+database (animacy, sex, etc.). For morphology, we take the information on morphological
+structure and inflectional pattern from the database. To induce the gender assignment principles
+
+10
+
+from our dataset of German nouns we use a Boosting Tree model (Chen et al. 2015). We do not
+claim that speakers actually perform Boosting Trees in their minds. Rather we assume that
+speakers have access to semantic, morphological and phonological information, which they can
+use in order to assign gender to nouns, but we do not make any assertions here as to how exactly
+this is done. We discuss the method in detail in section 5.
+
+2.6. TYPOLOGY AND STATISTICAL MODELING. Statistical modeling is used for finding significant
+patterns in large data sets. While applying statistical modeling to a specific case, German gender,
+we show how typologists can benefit generally; we aim to raise awareness of the advantages and
+the challenges of this method.
+First, the methods of statistical modeling are fast. Finding meaningful patterns in gender
+assignment in a large database of German nouns by hand would take months (if not years) of
+painstaking and error-prone work. Indeed, evaluating all interactions of all the factors we
+consider in this paper manually is impossible with the number of nouns (over 30,000) in our
+database. And since typologists are interested in cross-linguistic comparison, this time problem is
+compounded. Thus, statistical modeling allows us to look at a fuller set of data.
+Then, from the typologist’s perspective, statistical modeling is systematic and leads to
+comparable results (Beniamine 2018; Guzmán Naranjo & Becker 2021). If we apply a traditional
+approach to datasets from different languages, there is no guarantee of comparability (Bonami &
+Beniamine 2021). As linguists we may make unconscious decisions which affect the analysis.
+The computer does not. If the procedure is well designed, we should obtain consistent and
+comparable results for different languages. Given the availability of cross-linguistic corpora and
+databases there have been a recent number of studies taking advantage of computational and
+statistical techniques (for some recent examples, see Guzmán Naranjo & Becker 2021; Levshina
+2022; Sylvain et al. 2023; Talamo & Verkerk 2022).
+On the other hand, statistical modeling comes with its own challenges. The method can be
+easily misapplied and the results misinterpreted (Sönning & Werner 2021; Winter 2022). There
+are pitfalls when using statistical techniques: a small error at any step of the analysis will
+propagate, and can have a significant impact on the results. As with any method, care must be
+taken that it is a good fit to our research questions and the datasets we work with.
+
+11
+
+Finally, the results of statistical modeling require linguistic analysis and linguistic
+interpretation: The methods of statistical modeling are tools, like other tools, and the results of
+their judicious vs heedless application vary like the sensible vs the careless use of a chainsaw.
+They require careful linguistic preparation. Our computational methods are only as good as the
+linguistic analysis which supports them (Janda 2019).
+
+3. THE TYPOLOGY OF GENDER ASSIGNMENT. Despite its complexity, the German system fits the
+typology of gender assignment well, combining semantic and formal assignment principles. To
+show this we outline the possible systems of gender assignment. The key distinction is between
+semantic and formal gender assignment (Corbett 1991:7–62):
+semantic assignment: information on the lexical semantics of a noun is sufficient to
+predict its gender for all or almost all nouns.
+formal assignment provides additional information, which can be:
+morphological (inflectional or derivational);
+phonological, based on the shape of the stem.
+
+There are languages whose assignment systems rely exclusively (or almost exclusively) on
+semantic assignment principles, and languages with systems which complement semantic
+principles with formal principles. There are no systems which are exclusively formal (hence
+often designated ‘semantic plus formal systems’). This is particularly interesting given that
+children tend to favor formal cues; see Culbertson et al. (2017) and Culbertson et al. (2019) for
+discussion, in the context of artificial language learning.
+The Nakh-Dagestanian language Bagvalal, spoken in southwestern Dagestan by
+approximately 1,500 speakers, has a semantic assignment system. In Bagvalal, there is
+evidence from agreement for three gender values. Assignment is exclusively semantic: nouns
+denoting male humans are masculine; nouns denoting female humans are feminine; all remaining
+nouns are neuter. Thus, neuter gender comprises all non-humans, whether animate or inanimate:
+
+12
+
+(2)
+
+Bagvalal (Kibrik 2001:64–5)
+waša
+
+w-iRi
+
+boy(M)
+
+M.SG-stop
+
+‘the boy stopped’
+
+(3)
+
+jaš
+
+j-iRi
+
+girl(F)
+
+F.SG-stop
+
+‘the girl stopped’
+
+(4)
+
+ʕama
+
+b-iRi
+
+donkey(N)
+
+N.SG-stop
+
+‘the donkey stopped’
+
+Similar systems are prevalent in the Dravidian family, for example Tamil (Asher 1985:36–7;
+Corbett 1991:8–9).
+While there are languages like Bagvalal and Tamil, in which gender assignment is achieved
+exclusively and straightforwardly by semantic principles, there are others where the core
+semantic principles (female/male or animate/inanimate) leave small numbers of nouns
+unaccounted for. These are languages with ‘predominantly semantic assignment’. A good
+example is Bininj Gun-wok (Mayali), as analyzed in detail in Evans et al. (2002), also see Evans
+(2003). Taken together, languages with semantic assignment and predominantly semantic
+assignment account for around half of the languages with gender systems. In a sample of 257
+languages in the World Atlas of Language Structure, Corbett (2013) found that 112/257, or 44%
+of languages had a gender system, and of these, 53 or 47% had a semantic or predominantly
+semantic assignment system. 4
+Going further, we find other languages in which the core semantic principles leave a large
+semantic residue. Unlike languages such as Bagvalal, where nouns in the semantic residue (those
+not denoting humans in Bagvalal) all make up a single gender value (the neuter), there are many
+languages in which the semantic residue is distributed across the gender values. In this case,
+languages also make use of formal assignment rules, which relate to morphological or
+phonological properties of the noun, such as the way a noun inflects or the phonological shape of
+
+13
+
+the stem. Formal assignment principles can generalize at different levels, which we illustrate
+briefly.
+A good example of morphological assignment can be found in Russian. The semantic
+principles take precedence, i.e. males are masculine and females are feminine; for the residue,
+the gender of a noun can be predicted from the inflection class to which it belongs (four main
+classes can be established); thus, for example, zakon ‘law’ belongs to inflection class I and is
+masculine and kniga ‘book’ belongs to inflection class II and is feminine.5 As expected, semantic
+core rules do indeed take precedence, so a noun like djadja ‘uncle’, which belongs to inflection
+class II and should therefore be feminine, is in fact masculine by virtue of its semantics. For the
+data, see Corbett (1991: 34–43) and for a detailed analysis, see Fraser & Corbett (1995).
+While prediction according to inflection class applies in principle to all nouns (there are
+generalizations even for those that do not inflect), languages may also have principles restricted
+to complex nouns. A well-known example is German’s Last Member Principle (Letzt-GliedPrinzip), for which see Köpcke & Zubin (1984:28–9), and references there. According to this
+principle, the gender of the whole word is determined by the gender of the last element. Another
+example of a structural morphological assignment principle can be found in V+N compounds in
+various Romance languages, e.g. French tire-bouchon (M) [pull-cork] ‘corkscrew’. Almost all of
+these are masculine by virtue of their structural type as V+N compounds, rather than taking the
+gender cue from the noun involved in the compound, e.g. French ouvre-boite (M) [open-tin] ‘tin
+opener’, or Italian stendibiancheria (M) [stendi-biancheria; hang.up-laundry] ‘laundry rack’,
+where both la boite (F) ‘tin’ in French and la biancheria (F) ‘laundry’ in Italian are feminine.
+Phonological principles also vary in generality. In the Cushitic language Qafar (Parker &
+Hayward 1985; Corbett 1991:51–2), as expected, semantic principles apply (nouns denoting
+males are masculine, those denoting females are feminine). For the semantic residue, one can
+predict the gender of a noun from the phonological shape of the stem. Nouns whose citation form
+ends in an accented vowel are feminine, e.g. karmà ‘autumn’, the rest is masculine, e.g. gilàl
+‘winter’ (with final consonant), tàmu ‘taste’ (final vowel, but not accented). However, semantic
+rules take precedence, so a noun like abbà ‘father’, which ends in an accented vowel predicting
+feminine, is in fact masculine following its semantics. Languages may also employ phonological
+principles relating to syllable count and phonotactic patterning. As implied earlier, systems with
+
+14
+
+semantic assignment supplemented by morphological and / or phonological assignment rules
+account for around half of gender systems (59 of 112, or 53%).
+Below we will discuss these in more detail for German. At this point it will suffice to say that
+almost two thirds of monosyllabic German nouns are masculine and three quarters of German
+nouns with the phonotactic description CC_CC are masculine, e.g. Flachs [flaks] ‘flax’ (Köpcke
+1982; Köpcke & Zubin 1983; Köpcke & Zubin 1984).
+
+4. GERMAN GENDER: ESSENTIALS. Here we present what is needed to appreciate the issues
+involved. There are two key parts of a gender system: how gender is realized and how gender is
+assigned. The evidence for gender is provided by the agreement system (Hockett 1958; Corbett
+1991). This component of the German gender system is relatively straightforward. The examples
+in (1) above show that within the nominal phrase there is clear evidence for a gender system, and
+one with three values. There is no reflection of gender in the predicate in Standard German, but
+the relative and third person pronouns both distinguish gender. Most nouns induce the same
+gender value within the nominal phrase (on the article and other modifiers) and on the relative
+and personal pronouns. Such nouns have a ‘consistent agreement pattern’ (Corbett 2012:85–8)
+and are the focus of our enquiry. The minority which shows different values for different
+agreement targets, the ‘hybrid’ nouns, are excluded here, as noted earlier, though they are of
+great interest for other reasons (see footnote 3 above).
+Assignment is a major issue for German. How is it that the native speakers “know” that Film
+‘film’ is masculine in German, that Symphonie ‘symphony’ is feminine and Buch ‘book’ is
+neuter? They have the evidence from realization (they are frequently exposed to the agreement
+targets in the input), but they need to know the gender value in order to produce the appropriate
+forms. The model of this knowledge is termed a ‘gender assignment system’, and is our topic. 6
+We follow the typology above in setting out the main generalizations.
+
+4.1. SEMANTIC ASSIGNMENT. Like all gender systems the German system shows semantic
+regularities. Sex-differentiable nouns, i.e. nouns which refer to male or female humans or male
+or female (higher) animals, are assigned their gender on the basis of biological sex: Frau (F)
+‘woman’ and Kuh (F) ‘cow’ are feminine, Mann (M) ‘man’ and Bulle (M) ‘bull’ are masculine.
+Where the sex is not apparent, or not of interest to humans, animals often receive
+
+15
+conventionalized gender, where one noun is used for referents of either sex, e.g. Affe (M) ‘ape,
+monkey’, Ameise (F) ‘ant’, Krokodil (N) ‘crocodile’.7
+For most German nouns, however, including the inanimate nouns in (1), gender assignment is
+based on formal principles, that is, it follows their morphology (compounding, derivation,
+inflection class) or their phonology (stem shape). We discuss these in turn.
+
+4.2. MORPHOLOGICAL ASSIGNMENT. There are two sides to morphological assignment, word
+formation and inflection. We start with word formation, where overall prediction rates are lower
+than in inflection.
+
+DERIVATION. Morphologically complex German lexemes are typically governed by the Last
+Member Principle (Letzt-Glied-Prinzip): the gender of the whole word is determined by the
+gender of the last element (Köpcke & Zubin 1984:28–9, and references there). According to this
+general principle, important properties of a German noun lexeme are typically determined by the
+last member. We can illustrate this from part of speech specification. Thus Gutmensch (M) ‘dogooder’ is a compound consisting of the adjective gut ‘good’ and the noun Mensch (M) ‘human
+being’. By the Last Member Principle, the compound is a noun. The Last Member Principle is a
+major factor in gender assignment, and it is particularly interesting for what exactly counts as the
+“Last Member”:
+(i) if the final item of a compound is a simplex noun, this determines the gender of the
+compound. For example, Mutterschutz ‘maternity’ consists of the feminine first member Mutter
+‘mother’ and the masculine last member Schutz ‘protection’; by the Last Member Principle it is
+masculine.
+(ii) if the final item of a compound is itself complex, it is the last noun (including any
+derivational prefixes or suffixes) which counts (Corbett 1991:50). So Königspetschaft ‘royal
+seal’ is neuter because Petschaft ‘seal’ is neuter, though -schaft derives feminine nouns. This
+also holds in nouns derived with the prefix Ge-. For example, Kirchengestühl ‘pews (collective)’
+is neuter. Starting from the masculine noun Stuhl ‘chair’, the derived noun Gestühl ‘seating’ is
+neuter; this is the last member, and so adding the feminine noun Kirche ‘church’ (the -n being a
+linking element) has no effect on the gender of the compound.
+
+16
+
+Derivational suffixes determine gender. For example, the suffixes -heit, -keit and -schaft
+derive nouns of feminine gender. In the case of die Heiserkeit (F) ‘hoarseness’ there is no doubt
+about the outcome, since it is derived from an adjective heiser ‘hoarse’. The suffix -keit, being
+the Last Member, is sufficient to determine that the derived noun is feminine, since it has no
+competition. More interesting are nouns like Freundschaft (F) ‘friendship’; here the base is the
+masculine noun Freund ‘friend’ but the derived noun is feminine. Similarly, in Landschaft (F)
+‘landscape’, derived from the neuter noun das Land ‘land’. Here the effect of the Last Member
+(the suffix -schaft) is clear; gender is assigned to the derived word as a whole and this is
+irrespective of the gender of the base if this is a noun.
+With productive suffixes the Last Member Principle works well. Almost all nouns derived
+with the productive suffixes -heit, -keit and -schaft are feminine, the only exception being das
+Petschaft ‘seal, stamp’ (Augst 1975:27), mentioned above. 8 However, less productive
+derivational affixes are often a less good predictor of gender; thus with -el, there is a greater
+variety of gender values, e.g. in Würfel (M) ‘die, cube’, Klingel (F) ‘bell’, Kürzel (N)
+‘abbreviation’. For nouns derived with -el, of 42 nouns in our database, 50% are masculine, 17%
+are feminine, and 33% are neuter.
+Given the Last Member Principle, we would not expect prefixes to have any effect, and this is
+basically what we find, as shown by the following triplet: Sinn (M) ‘sense’, Zeit (F) ‘time’, Wort
+‘word’ (N). Each can be prefixed with un-, giving Unsinn (M) ‘nonsense’, Unzeit (F)
+‘untimeliness’, Unwort (N) ‘offensive word’. The prefix Un- has no effect: the gender of the base
+is retained. There are exceptions to this however, the prefix Ge- is associated with neuter gender,
+e.g. Gesuch (N) ‘petition’ from the verb suchen ‘seek’, Gebüsch (N) ‘shrubbery’ from Busch (M)
+‘bush’.
+We note two further derivational rules which predict the gender value without exception:
+(i) infinitives can be regularly converted to nouns of neuter gender, e.g. Lachen ‘laughing’
+from the infinitive lachen ‘laugh’, and
+(ii) verbal bases can be converted to nouns of masculine gender, e.g. Einkauf ‘purchase’ from
+einkaufen ‘buy’ (Schäfer 2018:233). This illustrates again that parts of the derivational system
+are fully regular in terms of gender assignment.
+
+17
+
+INFLECTION. German nouns are typically analyzed as belonging to more than a dozen inflection
+classes (see for example Pavlov 1995:44; Cahill & Gazdar 1999). There are considerable
+differences in the number of members, with some clear majority patterns (see below). The
+typical paradigm has eight cells. There are two number values, four case values and extensive
+syncretism. Three example paradigms are given in (5) to (7); principal parts (see below) are
+highlighted in orange.
+(5) Forms for German Lampe ‘lamp’ (genitive SG -Ø, nominative PL -(e)n)9
+SINGULAR
+
+PLURAL
+
+NOMINATIVE
+
+Lampe
+
+Lampen
+
+ACCUSATIVE
+
+Lampe
+
+Lampen
+
+GENITIVE
+
+Lampe
+
+Lampen
+
+DATIVE
+
+Lampe
+
+Lampen
+
+While Lampe has syncretism of all case forms, distinguishing only singular from plural, other
+nouns make more distinctions; thus Tag (M) ‘day’ in (6) shows evidence for the genitive and
+dative:
+(6) Forms for German Tag ‘day’ (genitive SG -(e)s, nominative PL -e)
+SINGULAR
+
+PLURAL
+
+NOMINATIVE
+
+Tag
+
+Tage
+
+ACCUSATIVE
+
+Tag
+
+Tage
+
+GENITIVE
+
+Tag(e)s
+
+Tage
+
+DATIVE
+
+Tag
+
+Tagen
+
+Finally, Zeuge (M) ‘witness’ shows evidence for the accusative, distinct from the nominative.
+
+18
+(7) Forms for German Zeuge ‘witness’ (genitive SG -(e)n, nominative PL-(e)n)
+SINGULAR
+
+PLURAL
+
+NOMINATIVE
+
+Zeuge
+
+Zeugen
+
+ACCUSATIVE
+
+Zeugen
+
+Zeugen
+
+GENITIVE
+
+Zeugen
+
+Zeugen
+
+DATIVE
+
+Zeugen
+
+Zeugen
+
+Despite the syncretism, there are principal parts of the paradigm (Stump 2016:257–9), which
+allow us to define each inflection class unambiguously; these are the genitive singular and
+nominative plural forms. For example, the feminine noun Lampe ‘lamp’ belongs to the inflection
+class -Ø/-(e)n (genitive singular Lampe and nominative plural Lampen) and the masculine noun
+Tag ‘day’ belongs to the inflection class -(e)s/-e (genitive singular Tag(e)s and nominative plural
+Tage).
+These three nouns give a fair impression of the inflectional system of German nouns, in that
+nouns typically distinguish the case values to a limited extent. This hampers acquisition, since in
+context a noun’s form may not reliably indicate its inflection class (which may be a predictor of
+its gender value). Conversely, the articles are frequent, and the definite article distinguishes
+gender, number and case moderately well (8).
+
+(8) Forms of the German definite article
+SINGULAR
+
+PLURAL
+
+MASCULINE
+
+FEMININE
+
+NEUTER
+
+NOMINATIVE
+
+der
+
+die
+
+das
+
+die
+
+ACCUSATIVE
+
+den
+
+die
+
+das
+
+die
+
+GENITIVE
+
+des
+
+der
+
+des
+
+der
+
+DATIVE
+
+dem
+
+der
+
+dem
+
+den
+
+There are various syncretisms in the definite article so that in some combinations the gender is
+clear and in some it is not (see the dative, for instance). And in the plural all gender contrasts are
+neutralized. Since the articles are frequent, the gender system is an integral part of German
+
+19
+syntax, and there is ample evidence of gender for the child learner; 10 see Kupisch, Geiss, et al.
+(2022:4–7) for a recent survey on acquisition, and Audring (2019) for discussion.
+In some instances, gender can be predicted unambiguously (or nearly unambiguously) from
+inflection class. So for example all nouns of inflection class -Ø/-(e)n, i.e. the class that Lampe
+‘lamp’ belongs to, are feminine. The same is true of all nouns which inflect with -Ø in the
+genitive singular and have a stem change plus suffix -e in the nominative plural. All nouns
+following inflection class -(e)n/-(e)n are masculine. Then there are several inflection classes
+whose nouns cannot be feminine, for instance, no inflection class with -s in the plural contains
+any feminine nouns. Likewise, no inflection class with -(e)s in the genitive singular contains any
+feminine nouns. For example, we can predict that der Knopf ‘button’ (a masculine noun
+following inflection class -(e)s/stem change+-e) cannot be feminine based on its paradigm (9).
+(9) Forms for German Knopf ‘button’ (genitive SG -(e)s, nominative PL stem change plus -e)
+SINGULAR
+
+PLURAL
+
+NOMINATIVE
+
+Knopf
+
+Knöpfe
+
+ACCUSATIVE
+
+Knopf
+
+Knöpfe
+
+GENITIVE
+
+Knopf(e)s
+
+Knöpfe
+
+DATIVE
+
+Knopf
+
+Knöpfen
+
+To tell masculines apart from neuters is less straightforward for these inflection classes, but often
+further phonological cues help. We know that Knopf is very likely masculine, given that almost
+all monosyllabic German nouns starting with the consonant cluster /kn/ are masculine, the only
+exception being the neuter noun das Knie ‘knee’ (Köpcke & Zubin 1984:29–30).
+Since German nouns inflect in numerous different ways, the logical approach is to take these
+patterns as predictors for the three gender values. This fits with the typological picture, where
+inflection regularly appears as a strong predictor (Corbett 1991:34–50).11 Naturally we wish to
+validate the claim for German, and to show more clearly than before the place of inflection in the
+overall scheme of German gender assignment. In this section we give the big picture, and fuller
+detail can be found in the supplementary materials. We outline two broad approaches to patterns
+of inflection, which we characterize as top down vs bottom up, and we show how each sheds
+light on the complex German system.
+
+20
+
+The top down approach starts from the observation that inflection properties (stem
+alternations as well as inflections) are not scattered randomly across the noun inventory. Rather
+there are patterns of implication: as just one example, those nouns which have the accusative
+plural in -(e)n always have this inflection in the genitive plural. Given these patterns, we divide
+nouns according to their complete inflectional behavior into inflection classes. As a baseline
+from which we can calibrate, canonical inflection classes: (i) are fully comparable and are
+distinguished as clearly as is possible; and (ii) the distribution of lexical items over canonical
+inflectional classes is synchronically unmotivated (Corbett 2009). We might expect this to be a
+purely idealized measure, but it is realized, if rarely. German represents a more common, less
+canonical situation, with some inflection properties shared across inflection classes, and hence
+different levels of generalization. Establishing the optimal analysis is not straightforward: while
+agreement evidence allows us to show that there are indeed three gender values in German, there
+is no similar test to show that we have the right number of inflection classes. As ever, we rely on
+criteria such as coverage of the data and simplicity. The best account to date, in our view, is that
+of Cahill & Gazdar (1999), who work with 13 inflection classes, structured in a default
+inheritance hierarchy. They make the important point that phonology is insufficient to predict
+inflectional behavior in German (1999:10); hence the need for inflection class information.
+Impressive though it is, we cannot simply plug in their analysis, since they use gender as a
+possible predictor for inflection class (1999:24), while we are demonstrating the predictability of
+gender.
+The bottom up approach starts from the raw data of the inflectional behavior of each noun.
+The different patterns, with their varying degrees of generality, are to be discovered rather than
+being given. We cannot assume that partitioning will be adequate, rather we may need semilattices, where one subclass is allowed to belong to more than one superclass (Beniamine 2021).
+Prima facie, this is a better fit with our general approach. Hence when we invoke inflection
+properties, we use the indicators from the CELEX corpus (with obvious errors corrected, see
+supplementary materials) as no more than an abbreviation for the full set of inflections. That is,
+nouns with the same indicator have strictly identical behavior (of stem alternation as well as of
+inflection); we do not include a level of analysis allowing for minor deviations, subclasses and so
+on (see further in section 5.5).
+
+21
+
+Given the effort we have put into cleaning and analyzing the CELEX database, it is worth
+asking what it tells us about the different approaches to inflection classes. Of the 30,576 nouns
+included, a partitioning into just six inflection classes accounts for the behavior of 26 thousand
+nouns. At the other extreme, there are 80 nouns with unique behavior, and almost 150 types in all
+which have ten or fewer members. These smaller groupings include numerous borrowings. 12
+Thus, the analysis into inflection classes represents an important property of the German system:
+these are patterns that account for the majority of nouns. Conversely, the diachronic reduction of
+the paradigms, both in the shrinkage of the case system and in the loss of affixal distinctions
+within the remaining system, has produced a situation in which there is a substantial minority of
+nouns which are heteroclites (they take forms from different major patterns) or are overabundant
+(they have alternative possibilities, Thornton 2019). For these, rather than simple partitioning,
+the richer lattice approach makes sense.
+
+4.3. PHONOLOGICAL ASSIGNMENT. The phonological shape of the noun stem often allows
+prediction of gender. Phonological shape does not provide exceptionless assignment, rather
+statistical tendencies. For example, most trochaic nouns ending in schwa are feminine, e.g.
+Lampe ‘lamp’ and Sprache ‘language’, but there are also (some) masculine nouns, e.g. Zeuge
+‘witness’ and (very few) neuter nouns like Ende ‘end’, which satisfy the same phonological
+description. Köpcke (1982) and Köpcke & Zubin (1984) establish a number of phonological
+rules to account for the gender of monosyllabic nouns, e.g. most monosyllabic nouns are
+masculine and almost all monosyllabic nouns which begin with the cluster /kn/ are masculine.
+This holds for our corpus as well: 64% of monosyllabic nouns are masculine and 93% of
+monosyllabic nouns with initial /kn/ are masculine, the only exception being the neuter noun
+Knie ‘knee’. So for the noun Knopf ‘button’, its initial cluster points overwhelmingly to
+masculine, which indeed it is. Table 2 gives gender distributions for selected phonological rules
+in Köpcke (1982) and Köpcke & Zubin 1984:29. (Absolute numbers in parentheses; the column
+‘other rules’ refers to the percentage of nouns correctly covered by semantic and morphological
+assignment rules, which in Köpcke’s (1982) model apply before all phonological rules.)
+
+<INSERT TABLE 2 ABOUT HERE>
+
+22
+
+As far as phonological rules are concerned, there are problems of applicability because the rules
+are not properly defined for the full set of German nouns. Since Köpckian rules are defined for
+monosyllabic nouns it is not entirely clear how they apply to polysyllabic nouns. Köpcke
+(1982:1–3) points out that his study of gender assignment in monosyllabic nouns was prompted
+by the fact that this was typically considered arbitrary, whereas the gender of polysyllabic words
+could be accounted for by appealing to the Last Member Principle, the prefix Ge-, or ending in
+schwa. Since his rules were not devised for polysyllabic nouns, we need to extend phonological
+principles to these. Further, it is sometimes not fully clear how a rule applies to monosyllables
+either, for example the rule CC_CC. It is not specified whether this rule only applies to CCVCC
+structures or also includes CCC_CC and CC_CCC structures, nor how many and which
+segments the underscore is allowed to match.
+The second issue with Köpckian rules is that they are not exhaustive. By this we mean that
+Köpcke made claims about words which match these patterns, but no claims about words which
+do not. Consequently, we are left with many nouns for which we have no explicit pattern to test.
+If we confine ourselves to monosyllables, and depending on the explicit implementation of the
+rules (see the points about applicability above), we achieve a coverage of slightly over 400 nouns
+out of 1,365 monosyllabic nouns in our database. This amounts to approximately one third. But
+what can we say about the rest?
+
+4.4. OVERLAP OF PREDICTORS. Figure 1 gives a taste of how these different semantic,
+morphological, and phonological principles or predictors overlap and form intersecting sets. We
+are looking at a part of the system, namely at the semantic predictor “is female”, the
+morphological predictor “inflects like Lampe” and the phonological predictor “ends in schwa”,
+each of which predicts feminine gender.
+
+<INSERT FIGURE 1 ABOUT HERE>
+The nouns Dame ‘lady’, Mutter ‘mother’, Frau ‘woman’, and Heilige ‘female saint’ are feminine
+due to their semantics. They refer to females. The nouns Dame ‘lady’, Frau ‘woman’, Uhr
+‘clock’ and Lampe ‘lamp’ are feminine due to the way they inflect, namely having the genitive
+singular in zero and the nominative plural in -(e)n. The intersecting set contains Dame and Frau,
+
+23
+
+for which these two predictors point in the same direction. Finally, we have the nouns Dame,
+Lampe, Heilige, Illustrierte ‘magazine’,13 Zeuge ‘witness’, and Ende ‘end’ in the set “ends in
+schwa”, again intersecting with the previous sets. However, there are non-feminines in this set:
+Zeuge ‘witness’ is taken care of by a different semantic principle, it refers to a male and is
+therefore masculine (arrow on the right), and Ende ‘end’ is at least not feminine by the way it
+inflects (arrow on the left). We will say more about Ende towards the end.
+It is worth stepping back for a moment to consider the implications of overlapping predictors
+for individual nouns. Early work on gender assignment took what we may call the parsimonious
+perspective. Given possible overlapping predictors, the aim was to establish which one was
+‘really’ the predictor. This perspective is in line with the default scientific approach, perhaps
+reinforced by a computing perspective (at a time when storage was expensive and so processing
+was preferred over storing). In terms of method, researchers set up the system in the most
+economical fashion, and once a noun is predicted correctly by a predictor it is put to the side as
+‘accounted for’, and we do not evaluate further predictors with respect to this noun. Increasingly
+researchers now also take a ‘reinforcing perspective’. Multiple predictors can point in the same
+direction, reinforcing each other and thus facilitating learning and retention. Given what we now
+know of the brain’s storage potential, the reinforcing perspective gains validity. Studies in corpus
+and cognitive linguistics have drawn attention to the fact that multiple factors can overlap and
+play a role in explaining a phenomenon (Bresnan et al. 2007, 2008; Bybee & Slobin 1982; Copot
+et al. 2022: Malkiel 1978; Levshina 2016, among many others). One of the insights from this line
+of research is that often there is not one single cue which predicts some linguistic outcome, but
+rather that multiple, partially overlapping cues can be present at the same time.
+
+5. NEW DATA AND METHODS. In analyzing the German gender system there are at least three
+pitfalls.
+First, “cherry picking”: Observations of alleged regularity are sometimes based on few
+examples and the overall applicability of these regularities is left unexplored. Some alleged rules
+might look convincing on the positive evidence that is presented, but they do not stand up to
+scrutiny. For instance, it has been claimed that “functional hollows” are neuter in German (see
+Steinmetz 2006; Rice 2006), i.e. nouns which refer “to a disk or to a complete or partial
+enclosure, whereby the hollow portions thereof are functional in that they are criterial for
+
+24
+defining the object in question” (Steinmetz 2006:1434), e.g. Rad (N) ‘wheel’. The suggestion is
+not psychologically plausible, hard to test and fraught with counterexamples (Enger 2009:1291).
+Second, often we find generalizations without a baseline: thus, a prediction of a particular
+gender value for, say, 45% of the nouns is hardly remarkable if 45% of the nouns overall are of
+that gender. It is important to establish such a baseline clearly; this is not straightforward,
+because the baseline varies depending on the dataset, as we discuss later.
+Third, missing the importance of overlapping factors: semantic, morphological and
+phonological, properties may make the same gender value more probable: so we have to be
+careful about making a claim for a particular generalization AND we need to investigate overlap
+as a part of the system.
+
+5.1. DATA. Taking a more holistic view, we mine a database of 30,576 German nouns from the
+CELEX database (Baayen, Piepenbrock & Gulikers 1995),14 based on the Mannheim corpus (∼6
+million words), annotated for gender, phonological shape, inflection class, and
+derived/compounded status. To this we added semantic information (human, animal, object,
+abstract, mass), and also frequency, based on the much larger DECOW16b corpus (Schäfer &
+Bildhauer 2012; Schäfer 2015). We also fixed inconsistencies in the original annotation in
+CELEX (see supplementary materials).
+The present study has a massive advantage over previous work. At last, we have a large and
+clean dataset, set up to allow interrogation with cutting-edge computational methods. But we
+need to bear in mind that even in a substantial corpus there are interesting phenomena which are
+hardly represented. We discuss two significant instances here. The first instance concerns human
+proper names, such as Anna, Holger, etc. For human proper names assignment is 100%, apart
+from unisex names, such as Kim, and the gender of a proper name can be deduced from the sex
+of the referent. If someone invents a new name for their daughter, we know it is feminine. This
+means that the semantic principles are actually better grounded than our statistics allow for.
+The second instance is fringe nonce assignment. In order to explain what we mean by this we
+need to take a step back. Many gender languages have semantic clusters which are associated
+with a certain gender. For example, cocktails in German are masculine, e.g. Caipirinha,
+presumably because the basic level hyperonym Cocktail is masculine.15 Such non-core
+assignment principles have been studied in detail: see, for example, Köpcke & Zubin (1983,
+
+25
+
+1984, 1996), Zubin & Köpcke (1984), Fahlbusch & Nübling (2014), Fedden, Audring & Corbett
+(under review). They have also been established for other languages, for example, Italian among
+others (Thornton 2009) and Norwegian (Enger 2009). Fringe nonce assignment is linked to basic
+level categories, which is the preferred level of naming and categorization of objects (Rosch et
+al. 1976; for an overview, see Hajibayova 2013). It is at the basic level that we find optimal
+categorization in terms of balance between informativeness and mental burden due to the number
+of distinctions (Tversky 1986:65). 16
+These two sets of nouns, human proper names and fringe nonce assignments, have important
+similarities. Individually they are infrequent in a balanced corpus, yet speakers are 100% certain
+of their gender assignment. Thus, the fringe is more transparent in comparison to the core.
+The overall distribution in our corpus of 36% masculine, 45% feminine and 19% neuter
+(given in Table 2 above) might tempt us to think about German as having 36% masculine, 45%
+feminine and 19% neuter nouns. We have to be careful, however, not to take these proportions
+for granted. It is not even clear which gender value has the most nouns; all depends on the
+dataset. Since proportions are always relative to the sample, they can vary widely depending
+which nouns we take to calculate them. This is illustrated in Table 3 (adapted and expanded from
+Opitz & Pechmann 2016:237). 17
+
+<INSERT TABLE 3 ABOUT HERE>
+
+But even in one and the same sample we see different distributions at different frequency bands.
+Gender proportions in our dataset are significantly different depending on the frequency of
+nouns, for which we use the DECOW16b corpus (Table 4). The plot (Figure 2) gives the same
+data but shows more clearly that we find change in gender proportion only for high frequency
+ranks, after which the proportions settle quickly and remain stable.
+
+<INSERT TABLE 4 ABOUT HERE>
+<INSERT FIGURE 2 ABOUT HERE>
+
+The difference in proportions depending on frequency-based sample size is revealing. A key
+factor is that a larger sample contains more derived nouns, and derivation favors the feminine in
+
+26
+
+German. So there is not one right answer about gender proportions; there is more structure to the
+lexicon than that. This distribution raises intriguing questions for psycholinguistics, especially
+for language acquisition, which starts with the least regular part of the lexicon for gender
+assignment; that is, the child learner is first exposed to the hardest part of the task (cf. Mills
+1986:49–50). We do not take this point further here, since the DECOW16b corpus is a general
+one, and not a corpus of child-directed speech. Another point to take into account is the ongoing
+stream of borrowings entering the language which may affect the overall balance (as has been
+the case in French), without having an effect on the frequent core vocabulary.
+Thus, the frequency-based distributions demonstrate the need for caution when citing gender
+distributions for other languages, since they vary according to the frequency range of the nouns
+included in the sample. In the remainder of the article, we will work with the whole sample of
+nouns with a consistent gender value (hence excluding hybrids).
+
+5.2. ANALOGICAL CLASSIFICATION. Our methods for semantic and phonological representations
+follow the hypothesis that words which are semantically or phonologically similar will belong to
+the same class. While earlier work on analogical classification was based on hand-crafted
+schemata (Bybee & Slobin 1982), more recent studies rely on computational methods, which can
+automatically induce the patterns in the data. Among these methods we find Analogical
+Modeling (AM, Skousen 1989; Arndt-Lappe 2011, 2014), Tilburg Memory-based Learner
+(TiMBL, Daelemans et al. 1998), Minimal Generalization Learner (Albright & Hayes 2002), and
+Neural Networks (Matthews 2005; Guzmán Naranjo 2019, 2020). While we cannot give a full
+discussion of these techniques in the present paper, the principle is the same: class assignment
+proceeds on the basis of phonological and semantic properties of the items (see Guzmán Naranjo
+2019 and Matthews 2005 for a detailed discussion and comparison of the different techniques).
+Most previous approaches to analogical classification represent the phonology of the lexical
+items as the N final segments of the base. 18 Each segment position is a categorical predictor, and
+each possible value gets a coefficient or weight. The addition of these weights predicts the class
+of the lexeme in question. For example, to represent the nouns Blick ‘gaze’, Scheik ‘sheik’,
+Schick ‘chic’, Teig ‘dough’ and Tick ‘tic’ this way, we can build the following table:
+
+<INSERT TABLE 5 ABOUT HERE>
+
+27
+
+A model trained directly on this representation would try to learn that if the word ends in /k/ it is
+likely to be masculine, or if the word has an /i/ in its last-2 position it is likely to be masculine,
+etc. While this approach works well if the patterns at play are very consistent across most items,
+it can run into problems when the patterns are more local. For example, in our complete dataset,
+out of all nouns which end in /k/, 726 are masculine, 317 feminine, and 254 neuter; and for
+nouns with /i/ in the last-2 position, 664 are masculine, 2,578 feminine, and 543 neuter. A naive
+model which only considers phonemes at fixed positions will struggle to learn this pattern. Even
+when looking at both positions at the same time, the number of nouns which end in /ik/ is 57
+masculine, 186 feminine, and 37 neuter. However, the pattern becomes clear when one focuses
+on monosyllables. For monosyllabic nouns ending in /ik/ 15 are masculine and 1 is neuter. A
+model trained on this type of representation (i.e. on individual phonemes as predictors) will
+struggle to find more local patterns like the one in Table 5.
+In this paper we present a new technique 19 which aims at both integrating the analogical
+principle, and modern machine learning techniques. Instead of representing nouns as strings of
+phonemes in our model, we represent the semantics and phonology of nouns as their similarity to
+their nearest masculine, feminine, and neuter neighbors. In order to calculate the lexical semantic
+similarity between nouns we use distributional semantics. For phonological similarities we
+employ a modified Levenshtein distance metric. The phonological similarities are calculated
+independently of the semantic similarities. We now turn to the description of these
+measurements.
+5.3. MEASURING SEMANTIC SIMILARITY. Distributional semantics is grounded in Harris’ (1954)
+and Firth’s (1957) hypothesis that the meaning of a word is given by the neighbors it appears
+with. We can assume that “[t]he degree of semantic similarity between two linguistic expressions
+A and B is a function of the similarity of the linguistic contexts in which A and B can appear”
+(Lenci 2008, 2018). Table 6 shows a toy example of the distribution of three nouns in an
+imaginary corpus: apple, orange, and tomato in relation to the verbs cook and peel.
+
+<INSERT TABLE 6 ABOUT HERE>
+
+28
+
+The idea is that apple appears in our imaginary corpus once with cook and five times with peel,
+orange once with cook and twice with peel, and tomato four times with cook and never with
+peel. From this distribution we can represent the meaning of these three words as vectors, with
+one dimension for cook and one dimension for peel.
+
+<INSERT FIGURE 3 ABOUT HERE>
+
+In this imaginary corpus the vectors for apple and orange are more similar to each other than
+they are to the vector of tomato. Based on the notion that words which have a similar distribution
+in a corpus have similar meaning, we can use semantic vectors to represent and calculate the
+semantic distance between words. More formally, the semantic similarity between two words is
+calculated as the cosine similarity between their vectors (resulting in a number between
+0=maximally distinct and 1=maximally similar). 20 In the previous example, the cosine distance
+similarity between apple and orange is 0.96, the cosine similarity between apple and tomato is
+0.2, and the cosine similarity between orange and tomato is 0.45. While this is just a toy
+example, it illustrates how semantic vectors help us measure the semantic similarities between
+lexemes. In practice, distributional approaches to semantics have proven to be extremely useful
+in linguistic research (Amenta et al. 2020; Guzmán Naranjo & Bonami 2021a; Marelli & Baroni
+2015; Padó, et al. 2016; Turney 2012; Varvara et al. 2021; Wauquier 2020; Wauquier et al.
+2020). For a comprehensive overview of work on linguistic questions using distributional
+semantics, see Boleda (2020).
+For building the semantic vectors we use the DECOW16b corpus (Schäfer & Bildhauer 2012;
+Schäfer 2015), which contains around 11 billion words. Instead of counting cooccurrences, we
+use a predictive approach to building the semantic vectors (Baroni et al. 2014; Mikolov et al.
+2013). In a predictive approach, we fit a neural network which tries to predict each word from its
+context (or the other way around). By doing this, the neural network builds an internal
+representation of each word which we can use as our distributional vector. To build our vectors
+we use Word2Vec (Mikolov et al. 2013). 21 Our vectors have 300 dimensions instead of the two
+in the toy example.22 A property of semantic vectors is that they capture all distributional
+information found in a corpus, which includes lexical semantics, but can also include other
+information. Building semantic vectors from a raw corpus can lead to a situation where the
+
+29
+
+vectors learn the gender of a noun from the agreeing targets, which could undermine the claim
+that the semantic properties of nouns help determine gender. To avoid this situation, we carefully
+neutralized the corpus for gender (see Veeman 2020 for an example of why gender neutralizing
+the corpus is important). We first extracted the lemmas provided by the DECOW16b corpus. The
+lemmatization provided by the DECOW16b corpus already removes most gender information
+like adjective inflection, but still contains some agreement targets, which we deleted. For
+example, the lemmatization found in the corpus still distinguishes between der, die, and das, and
+it does not neutralize preposition + article combinations (like im), which still contain gender
+information. We took care to neutralize all elements of this type (including pronouns, articles,
+relative pronouns, etc.) from the corpus (we coded all articles as ART, split elements like im into
+in + ART, etc.). We built vectors for all the nouns in our dataset, except 196 nouns which were
+not found in the DECOW16b corpus.
+It is important to emphasize that de-gendering the corpus is a crucial step for the task of
+predicting gender from semantic vectors. If we were to use a non-gender neutralized corpus, the
+semantic representation of a word like Mann would contain the information that it often occurs
+with masculine articles, demonstratives, and agreeing adjectives, and that a word like Frau often
+occurs with feminine articles, demonstratives, and agreeing adjectives. Making predictions based
+on this information is different from trying to make predictions based on the lexical semantic
+properties of nouns. It is worth mentioning that, as far as we know, all previous studies on gender
+assignment using semantic vectors have not taken the issue of de-gendering the corpus into
+account. Works like Williams et al. (2009) and Basirat et al. (2021) use vectors which conflate
+the lexical semantics and agreement patterns of nouns. This is a methodological problem because
+it means that the models’ predictions will not be based solely on the lexical semantics of the
+nouns, but will also be influenced by the agreement patterns with which the nouns occur. In other
+words, they conflate the two sides of the issue, agreement and assignment (see section 2.1).
+Having built the vectors, we calculated the cosine distance of every noun to its five nearest
+masculine, five nearest feminine and five nearest neuter neighbors (thus 15 nearest neighbors for
+each noun).23 For the missing nouns we assume that they are equidistant to all other nouns (i.e.
+the model has no lexical semantic information about these). For example, our semantic
+representation of Ritter ‘knight’, Birne ‘pear’, and Auto ‘car’ would be as given in Table 7 (for
+reasons of space we give only three neighbors). We then take the distance to each of these 15
+
+30
+
+neighbors, as a predictor in the model. In other words, the semantic component based on the
+semantic vectors consists of 15 numeric predictors which contain the distance of each noun to
+the nearest 5 masculine, 5 feminine, and 5 neuter neighbors. The rationale behind this decision is
+that it is not only important to know what the nearest semantic neighbors of a noun are, but also
+how similar a noun is to its neighbors. This is captured by our representation. The examples in
+Table 7 show how the predictors would look (although Table 7 only shows 9 neighbors instead
+of 15).
+
+<INSERT TABLE 7 ABOUT HERE>
+
+These examples show that nearest neighbors tend to belong to the same gender. This is a
+statistical generalization, not an absolute, hence we find Birne (F) ‘pear’, whose nearest neighbor
+is Apfel (M) ‘apple’. It is also worth pointing out that occasionally neighbors are lexically not
+similar, but the vectors have similar representations because they tend to appear in very similar
+contexts like Auto ‘car’ and Langstrecke ‘long-distance route’.
+
+5.4. MEASURING PHONOLOGICAL SIMILARITY. In our approach to phonological distance, we use
+right-edge weighted Levenshtein distances. We assume that for German similarity on the righthand side is more important than similarity on the left-hand side. We count how many
+differences there are between two strings, but we weight each difference by its distance to the
+right-hand side edge. For instance, Baum /baʊm/ ‘tree’ and Bauch /baʊx/ ‘belly’ differ in exactly
+one segment and that segment is the first one counting from the right, resulting in a distance of 1
+(1/1 = 1). The nouns Baum /baʊm/ and Saum /zaʊm/ ‘seam’ also differ in exactly one segment,
+but the segment is the fourth counting from the right, thus yielding a distance of .25 (1/4 = .25).
+(More detail on this measurement is provided in the appendix.) This approach of weighting the
+distance from the right edge of the word works better based on multiple experiments (Guzmán
+Naranjo & Bonami 2021b; Bonami & Pellegrini 2022). Thus, we build a representation of
+phonology analogous to the one described above for semantics. We also calculate the
+phonological distance of each noun to its nearest 5 masculine, 5 feminine, and 5 neuter
+neighbors, and use these distances as the phonological information. It is worth noting that the
+
+31
+
+phonological and semantic neighbors are estimated independently of each other, and do not need
+to overlap.
+
+5.5. MORPHOLOGICAL INFORMATION (derivation, inflection class) AND LEXICAL SEMANTIC
+INFORMATION
+
+(animacy, sex, etc.). Apart from the distance-based measures we also used
+
+categorical information. For morphological derivational processes we use the most peripheral
+derivational suffix and the most peripheral derivational prefix on the noun. While the CELEX
+database provides the morphological structure of the nouns, no distinction is made between
+derivation and compounding, and while CELEX offers segmentation of morphologically
+complex forms, the constituent parts are not labeled as stem or affixes. For this reason, we
+manually re-annotated all complex nouns in our database, coding them as compounds or
+derivations, and for the latter noting the last derivation process. This process left us with 43
+prefixes and 112 suffixes. Additionally, for prefixes, we annotated whether the element is a
+particle (aus-, e.g. [[[aus][reiss]]er] ‘runaway’), 24 an embedded prefix (be-, e.g. [[[be]such]er]
+‘visitor’), or an unembedded prefix (erz-, e.g. Erzfeind [[erz][feind]] ‘archenemy’). For inflection
+class information we take the same approach. Inflection class is annotated in the CELEX
+database as a singular-plural combination, but it was missing for a considerable number of
+nouns. We manually corrected and completed the annotations. This leaves us with 188 inflection
+classes.25 Finally, apart from semantic distances, we also used hand-annotated lexical semantics
+consisting of four features: animacy (with the values human, animate, inanimate), concreteness,
+i.e. whether the referent can be perceived with one of the five senses (yes, no), sex (male, female,
+epicene, none), and mass, i.e. whether any part of the referent can be described with the same
+noun (yes, no, indeterminate). For example, Ritter ‘knight’ has the specification [animacy:
+human; concrete: yes; sex: male; mass: no], Birne ‘pear’ has the values [animacy: inanimate;
+concrete: yes; sex: none; mass: no] and Auto ‘car’ has the values [animacy: inanimate; concrete:
+yes; sex: none; mass: no]. We treat these predictors as categorical.
+
+5.6. SUMMING UP. Our predictors are: lexical semantics (sex, animacy, concreteness, mass),
+distributional semantics (represented as distances to the five nearest masculine, the five nearest
+feminine, and the five nearest neuter nouns), phonology (represented as distances to the five
+nearest masculine, the five nearest feminine, and the five nearest neuter nouns), derivational
+
+32
+
+predictors (suffix or prefix), and inflection. In the remainder of the article, we use the
+abbreviations SEM (distances), SEM (lexical), PHON, DERIV and INFL. In some instances, we
+combined SEM (distances) and SEM (lexical), for which we simply use the abbreviation SEM.
+
+5.7. AUTOMATIC RULE INDUCTION: BOOSTING TREES. Instead of finding rules manually, we use a
+Boosting Tree model (Chen et al. 2015), which is one of the best classification techniques there
+is, as demonstrated in similar tasks (Guzmán Naranjo & Bonami 2021a; Bonami & Pellegrini
+2022). The intuition of Boosting Trees is similar to that of Random Forest (Breiman 2001). We
+build many small decision trees, which individually are relatively weak classifiers, and then join
+them together into a much stronger system which learns automatically all the rules and
+interactions in the data. For all predictors and combinations of them, the model builds many
+small decision trees. The main difference between Boosting Trees and Random Forests is that in
+a Random Forest, each individual tree is fitted with a random subset of the predictors and a
+random subset of the data. In contrast, in Boosting Trees, each tree is fitted on the residuals of
+the previous tree, which means that the model iteratively improves on its previous state.
+An important issue to bear in mind is overfitting. We want to know how well the different
+factors help predict the gender of new nouns, and not just how well the model can remember the
+gender of nouns it has already encountered. Boosting trees are generally very robust against
+overfitting, and there are several regularization meta-parameters used to prevent it. To measure
+how well our model would perform on new data, and assess whether we are overfitting the data,
+we perform 10-fold cross-validation. We split our dataset into 10 groups with roughly the same
+number of nouns each. We then train the model of interest using 9 out of the 10 groups, and we
+predict the remaining group, and then repeat this process for each group. In each iteration, a new
+model is trained without the information from the previous iteration. This way, the model is
+always predicting new, unseen nouns. The total accuracy of the model is calculated on the
+predictions of all 10 iterations. One additional aspect which we took into account when building
+the cross-validation datasets was that we kept all compounds sharing the same noun as the
+second element in the same cross-validation group as the base noun. For example, all compounds
+with the noun Bier ‘beer’ as second element: Altbier, Fassbier, Flaschenbier, etc. were kept in
+the same group as the noun Bier. The reason for this is the Last Member Principle (see §3.2
+
+33
+
+above). If the trained model already saw the word Bier, then it would be trivial to predict all of
+its compounds.
+Since we are interested in understanding both how the individual predictors behave, and how
+they work together, we built a series of models with all possible combinations of our predictors.
+We treat SEM (distances) and SEM (lexical) as independent predictors only in models with single
+predictors. We combine these two predictors into SEM for all other model combinations. This
+allows us to compare and evaluate the contribution made by each individual predictor.
+
+6. RESULTS. In discussing the results of our models, we begin with overall accuracy figures and
+variable importance, then talk about the effects of frequency and finally go into nested
+generalizations.
+
+6.1. OVERALL ACCURACY AND VARIABLE IMPORTANCE. First, we look at the accuracy of each
+individual model. The x-axis in Figure 4 gives the estimated accuracy, and the y-axis compares
+models that differ in terms of the information that was given to the model. We present models for
+all predictor combinations (PHON, DERIV, INFL, and SEM), plus models for just the singular
+inflection, plural inflection, SEM (lexical), and SEM (distances). The overall accuracy results show
+clearly that the system is anything but unpredictable. This should not come as a surprise given
+previous research on German and on gender assignment more generally, but astonishingly the
+old myth that German gender assignment is somehow arbitrary and unpredictable still gets
+repeated despite all evidence to the contrary. The German system ‒ while complex ‒ is governed
+by clear principles. For example, Köpcke & Zubin’s system achieves an accuracy of around 75%
+on simplex nouns and 71% on our whole dataset, and Basirat et al. (2021), who do not take
+morphological information (derivation, inflection class) into account, using a bespoke dataset
+constructed for the purpose of their study, reach an accuracy of 88% using phonology, and 87%
+with a model which combines phonology and semantics.
+Our model achieves better results. We assume that there is some fluctuation in the accuracy
+estimates due to the cross-validation and the random nature of Boosting Tree classifiers, and we
+therefore also calculated the 95% uncertainty intervals for the accuracy values.26
+
+34
+
+<INSERT FIGURE 4 ABOUT HERE>
+
+The combined factors in our model reach a predictive success of 96%, as the top line in Figure 4
+shows. In fact, the top two models, that is all four predictors and all predictors except derivation,
+perform equally well.27 Derivation is essentially irrelevant once we have the phonology. But
+there is at least some non-overlapping information in the other predictors. This is important
+because it shows that they all contribute. As we noted earlier, the majority case baseline is 45%.
+This is the accuracy a model would achieve by predicting the most frequent class. Any model
+with an accuracy over 45% is performing better than a model just predicting feminine. As far as
+single predictors are concerned, phonology is best. Inflection class is decent; in fact, it is the best
+predictor for simplex nouns. Predicting from the genitive singular works better than from the
+nominative plural. Semantics is less good, but works well for humans; and semantics based on
+distances performs much better than semantics based on lexical meaning. Derived status is
+relatively weak, but still over the baseline of 45%. The reason for this weak performance is
+twofold. First, only some suffixes are strongly predictive of gender (for example -keit or -heit),
+while others are only weakly predictive. Second, only a subset of nouns have a suffix, which
+means that the prediction for most nouns, when only looking at suffixes, will be the majority
+class (when the model encounters no information, i.e. no suffix, it assigns an item to the default,
+i.e. most frequent, class). Thus, the 58% accuracy of derivation is here calculated with respect to
+the whole corpus, and not with respect to only derived nouns.
+We can calculate a variable importance estimate from the overall accuracies (Table 8). Thus,
+to calculate the variable importance of the phonology we subtract from the accuracy of the full
+model, the accuracy of the model without the phonology: 0.96 – 0.91 = 0.05.
+
+<INSERT TABLE 8 ABOUT HERE>
+Doing this for all four predictors, we see that phonology clearly performs best. 28 ‘Variable
+importance’ provides a measure of the percentage of nouns that one predictor can cover, so for
+5% of nouns we need the phonology, but this does not tell us anything about overlap. There
+might be many nouns which the phonology predicts correctly that other predictors would also
+predict correctly.
+
+35
+We might call this “additive” variable importance. We ignore overlap of predictors; multiple
+predictors can point in the same direction. This is in line with an approach where assignment
+principles can reinforce each other. Another way of looking at predictors is what we might call
+“subtractive” variable importance. Here we try to eliminate all redundancy. We only include a
+predictor if it does something that no other predictor does. This is in line with an approach where
+assignment principles are set up in a parsimonious way.
+A look at subtractive variable importance yields the following picture (Table 9).
+
+<INSERT TABLE 9 ABOUT HERE>
+
+For each predictor, we see the number of nouns that remain when we remove from the dataset all
+nouns covered by the other predictors, and the number of nouns that the predictor under scrutiny
+predicts out of the remaining nouns. So the phonology can predict another 1,277 nouns out of the
+1,673 nouns not correctly predicted by the other predictors. Now we can be sure that we need the
+phonology only for these 1,277 nouns, all other nouns that the phonology might cover are also
+covered by other predictors.
+For Köpckian-style phonological rules (last row in Table 9) we first run all models except the
+phonology, which leaves us with 1,673 nouns, the Köpckian rules correctly predict 9 additional
+nouns, which makes them inferior to our distance-based phonology predictor which correctly
+predicts another 1,277 nouns. This does not mean that Köpckian-style rules are not valuable, but
+it shows that their import is indirect by reinforcing other principles. It confirms what Köpcke
+(1982:113) himself pointed out, namely that his rules serve as learning and memory aids, rather
+than as rules conforming to the ideal of parsimoniousness and efficiency.
+Finally, we look at the nouns which are not predicted correctly in the complete model. While
+we cannot be entirely certain about any specific case, we give some probable reasons. There are
+a total of 1,216 errors in the complete model. Out of these, 632 nouns belong to inflection classes
+which overwhelmingly predict a different gender from the noun in question. For example, the
+noun Zimmer ‘room’ is neuter, but the model predicts masculine. Zimmer also belongs to the
+inflection class -s/-Ø, which has a majority of masculine nouns (2,996 masculine and 1,172
+neuter). It is thus likely that in this case (and others like it) the phonology and semantics were not
+strong enough for the model to make the right prediction. In the remaining 584 error cases
+
+36
+
+unrelated to inflection class, we find that more than half are borrowed (and rather rare) nouns
+like Aeon ‘aeon’, Whist ‘whist’ or Zen ‘zen’. These nouns do not necessarily follow common
+phonological patterns in the rest of the dataset and it is thus not surprising that our model
+struggles with them.
+
+6.2. FREQUENCY EFFECTS. So far, we have shown that our model can reach a very high accuracy
+when trained on the whole dataset. However, speakers do not necessarily know all possible
+German nouns, especially when they are first acquiring the system. See Heitmeier et al. 2024 for
+a brief overview of different models of frequency effects in learning. It is thus interesting to ask
+the question of how many nouns are necessary to reach a good predictive accuracy, and how the
+accuracy of the model changes with the size of the training data. To explore this question, we
+trained models on the most frequent 100, 1000, 5000, 10000, 15000, 20000, and 25000 nouns
+and then predicted the least frequent 5,576 nouns. 29 The results of this process are shown in
+Figure 5.
+
+<INSERT TABLE 5 ABOUT HERE>
+
+It is surprising that training the model with only the most frequent 100 nouns is enough to get an
+accuracy of 83%, which is better than several previous approaches to the problem (recall that
+Basirat et al. (2021) achieved an accuracy of about 88% with a training set of tens of thousands
+of nouns). 1,000 nouns provide an accuracy of 94%, and with 5,000 nouns this rises to 95%, after
+which it does not increase much more. That so few nouns are sufficient to reach high predictive
+success interestingly mirrors the fact that young children are quite successful at gender
+assignment, even though they know comparatively few words (see also Szagun et al. 2007: 459).
+This finding is surprising given the widely held hypothesis that frequent items are less good as
+input for learning gender because they are the most exceptional ones.
+
+6.3. NESTED GENERALIZATIONS. Finally, we turn to nested generalizations, where combinations
+of criteria make a prediction which neither of the individual criteria are capable of making on
+their own. We start with a simple example of a two-way nested generalization based on the
+overlap diagram (Figure 6).
+
+37
+
+<INSERT FIGURE 6 ABOUT HERE>
+Table 10 gives the gender distributions of the two predictors in question: “ends in schwa” and
+“inflection class -s/-(e)n”.
+
+<INSERT TABLE 10 ABOUT HERE>
+“Ends in schwa” predicts feminine, “inflection class -s/-(e)n” on the other hand predicts
+masculine, but both together predict neuter. Coming to the end, there is the point about Ende. It
+is a noun for which by combining all the pieces of information together (inflection class and
+phonology) we get a single clear and unequivocal gender value, which we would not have been
+able to predict by looking at the individual predictors. Importantly, nested generalizations are not
+examples of overlapping information but rather we can think of them as ‘rule-reversals’.
+To get an idea of the importance of nested generalizations in German, we take the full dataset
+and sequentially remove all nouns correctly predicted by the predictors whose interactions we
+want to examine. In the first row in Table 11 this would be SEM, then INFL. ‘Total remaining’ is
+the number of nouns not correctly predicted by either SEM or INFL; ‘number of nouns predicted’
+is the number of additional nouns predicted by both SEM and INFL together.
+
+<INSERT TABLE 11 ABOUT HERE>
+
+Semantics-inflection class is the most important interaction; it covers approximately 950 nouns
+not covered by SEM and INFL alone. Two-way nested generalizations are relevant for about 6% of
+German nouns, so it is not surprising that they do not figure in traditional accounts. Nested
+generalizations are not to be confused with overlap. We are not saying that only 6% of German
+nouns can be predicted by alternative rules, but rather that in 6% of nouns we get nesting effects
+where a combination of two predictors yields a different result from looking at the predictors
+individually. We tested for three-way nested generalizations as well (Table 12).
+
+<INSERT TABLE 12 ABOUT HERE>
+
+38
+The column ‘total remaining’ shows the number of nouns which were not correctly predicted by
+the models using one predictor, and the models with two-way interactions. The column ‘number
+of nouns predicted’ shows how many additional correct predictions the model with the three-way
+interactions can make from the remaining nouns. So for the first row in the table, we first check
+SEM,
+
+then DERIV, then INFL, then all two-way combinations of these three factors and each time
+
+remove correctly predicted nouns. 1,034 nouns remain, of which the combined model can predict
+an additional 16. Thus, we see little evidence of three-way interactions being relevant for
+German.
+As already mentioned in the methods section, boosting tree models consist of many individual
+conditional inference trees, which work together to model the data. While visualizing the whole
+model is difficult, it is helpful to look at a single conditional inference tree. Figure 7 shows a
+single tree fitted to the data with the same predictors as our larger boosting tree models, but for
+presentation purposes we limited the tree to a maximum of 5 levels. Note that binary variables
+are coded as 0 (not present/no) or 1 (present/yes). In the tree, the main bulk of the work is done
+by the IC -Ø/-(e)n, which is a reliable predictor of feminine gender. The ICs -Ø/– and -Ø/stem
+change+-e are also included in the model, but their effect is less direct and interacts with the
+effect of phonological neighbors. The phonological distances to the neighbors have a simple
+interpretation in this tree. If we look, for example, at the predictor for the second neuter
+neighbor, if a noun is closer to it than ~ 0.747, then it is likely to be neuter, but if its distance is
+higher than ~ 0.747 it is likely to be masculine. However, in this tree, this relation only takes
+effect after all other predictors higher up in the tree have been considered.
+
+<INSERT FIGURE 7 ABOUT HERE>
+
+7. CONCLUSIONS. The empirical conclusion is the confirmation that the gender value of a
+German noun is highly predictable. This will be surprising for many, since German has been
+taken, from Bloomfield (1933:280) on, as an extreme example of unpredictability. Still better,
+and more surprisingly, our model performs well given just the most frequent 100 nouns, where
+we expect the highest degree of irregularity to be located. The gender assignment system is
+certainly complex, but it represents a typologically well-known type: a combination of a
+semantic core and formal (morphological/phonological) assignment principles (Corbett 1991:33–
+
+39
+
+69). A novel perspective is the interlocking regularities of the system, which mutually predict
+gender, and help us to understand how children learn — and adults retain — the system. Our
+study builds on previous work, most notably Köpcke (1982), which was a major step forward in
+demonstrating that gender assignment in German is far from arbitrary. Of course, it is no surprise
+that the methods we use, which have evolved significantly from those available in the 1980s, are
+more successful in showing the regularities of the system. And we go beyond previous work in
+offering a holistic account of gender assignment in German, based on a large database and a
+wide range of predictors. Crucially, we degendered our corpus when determining similarities;
+this is an essential step to avoid gender information in associated words informing gender
+prediction (in other words, to avoid the answer being written into the question).
+Our methodological conclusion is that we have demonstrated how typologists can benefit
+from statistical modeling. We see this in the rigorous testing and checking of proposed
+generalizations. And in the freedom to experiment with relatively little cost in time and effort,
+once the database has been carefully set up and checked. Partly as a result of this, we see a shift
+towards the study of interlocking regularities, as noted above. Thus, in earlier work on gender
+assignment, there was an emphasis on distinguishing regularities from each other, to establish
+which was responsible for a particular assignment. Once a predicator had been identified, the
+noun was put aside as accounted for and no further predictors were evaluated with respect to this
+noun. The current work takes a broader view of inter-connected and mutually reinforcing
+regularities. For this, German again proves itself a typological gem.
+This point also suggests the significance of the study, beyond linguistics. The relationship of
+the generalizations one to another, which we discussed as additive vs subtractive (§6.1) is a
+component of much larger issues. The earlier approach was parsimonious, following the
+established scientific method, enshrined by Occam. And the justification was that it provided a
+linguistic model, and that any subsequent psycholinguistic account needed to accomplish at least
+those results. The approach based on statistical modeling outperforms the parsimonious models
+(though not reaching full accuracy). On the other hand, while we knew exactly how our earlier
+assignment rules worked, we are less clear about the results from statistical modeling. This is a
+general core question when we apply machine learning models like the ones described in this
+paper: how do they work internally and what and how do they relate to what humans do? Our
+methods are a great tool for linguists and can show us how successful a machine-learning
+
+40
+
+approach based on similarities is, but they do not divulge what is going on in the mind of the
+speaker when performing gender assignment. So while we present impressive results, we have to
+be cautious and refrain from overambitious claims.
+Now for all its complexity, German gender is a restricted, well-defined domain. And it has
+many advantages as an area of study (millions of speakers and well-funded linguistics research
+centers, to name but two). German gender might prove itself a good testing area to make
+progress on the key question of what machine learning models are actually learning and to what
+degree the results we obtain using them relate to what speakers actually do. For example, our
+model shows that several predictors partially overlap. This raises the question: do speakers pay
+attention to overlapping predictors or do they filter them out to arrive at something more akin to
+the parsimonious model?
+In one sense, we have answered our question, by providing an account of German gender
+assignment, arguably the Holy Grail for linguistic gender research. But in another sense, we have
+just provided the basic material for the real questions, concerning the competence of speakers,
+and how our models relate to that competence. Our typological gem has not yielded all its
+secrets.
+
+41
+
+Appendix
+
+a. Description of boosting trees (§4.6)
+To illustrate how Boosting Trees work, Figure A presents a toy example. In this task, we want to
+classify each observation as being either a circle or a square (these would be our toy genders),
+based on their position on the x-axis and the y-axis (these would be our toy predictors). Boosting
+Trees approaches this problem by doing multiple iterations and at each iteration, building a new
+classifier to solve part of the problem not solved by previous iterations.
+
+<INSERT FIGURE A ABOUT HERE>
+
+At the first iteration, we build the model F1 which says: if x<1, then circle, otherwise square.
+This model captures two observations correctly, but makes three errors (in red). At the second
+iteration we build model F2 to target those observations which were incorrectly classified by F1
+(now larger in red in Figure A) which says: if y>4 then circle, otherwise square; and we add
+F1+F2. This combination now makes one mistake (in blue). At the last iteration we build F3 to
+target the final misclassified observation (now larger in blue in the figure) which says: if x<5
+then circle, otherwise square; and we add F1+F2+F3. This combination covers all cases.
+This is a toy example30 because in this case F1-F3 are classification trees of only a single
+node, in reality each decision tree can have many nodes, but the principle is the same.
+
+b. Bayesian model for measuring uncertainty in the accuracy estimates
+To calculate the uncertainty of the accuracy we assume that model accuracy is binomially
+distributed. We organize our data in a table (Table A), where each row contains a classification
+model and the number of correct predictions.
+
+<INSERT TABLE A ABOUT HERE>
+
+Then we fit a Bayesian model with the following structure:
+
+42
+
+Accuracyj ~ Binomial(N, pj)
+logit(pj) = betaj
+betaj ~ Normal(0, 2)
+N = 30576
+
+where betaj are the coefficients we are interested in and which represent the accuracy of the
+analogical model. The last line is our prior for the coefficients, which in this case is wide enough
+to allow for high accuracies, but it is narrow enough to discard unlikely values.
+We fit essentially the same model for Figures 5 and 6 but use different N values, according to
+the frequency bandwidth.
+
+c. Further examples of alignments and distances
+Here we present examples of distance calculations for a few word pairs. These help to illustrate
+how the system works.
+1. Kamm (‘comb’) – Mann (‘man’)
+k
+
+a
+
+m
+
+m
+
+a
+
+n
+
+1/3
+
+0
+
+1
+
+Total distance = 1.333...
+2. Baum (‘tree’) – Bach (‘river’)
+b
+
+a
+
+b
+
+a
+
+0
+
+0
+
+u
+
+m
+x
+
+1/2
+
+1
+
+:
+
+x
+
+Total distance = 1.5
+3. Buch (‘book’) – Bauch (‘belly’)
+b
+
+u
+
+43
+
+b
+
+a
+
+u
+
+x
+
+0
+
+1/3
+
+1/2
+
+0
+
+Total distance = 0.8333...
+
+44
+
+References
+ALBRIGHT, ADAM; and BRUCE HAYES. 2002. Modeling English past tense intuitions with
+minimal generalization. Proceedings of the ACL-02 Workshop on Morphological and
+Phonological Learning 6.58–69.
+AMENTA, SIMONA; FRITZ GÜNTHER; and MARCO MARELLI. 2020. A (distributional) semantic
+perspective on the processing of morphologically complex words. The Mental Lexicon 15.62–
+78.
+ARNDT-LAPPE, SABINE. 2011. Towards an exemplar-based model of stress in English noun–noun
+compounds. Journal of Linguistics 47.549–85.
+ARNDT-LAPPE, SABINE. 2014. Analogy in suffix rivalry: The case of English -ity and -ness.
+English Language and Linguistics 18.497–48.
+ASHER, R. E. 1985. Tamil. London: Croom Helm. [Reprinted 1989, London: Routledge].
+AUDRING, JENNY. 2014. Gender as a complex feature. Language Sciences 43.5–17.
+AUDRING, JENNY. 2019. Canonical, complex, complicated? Grammatical gender and linguistic
+complexity: Volume I: General issues and specific studies, ed. by Francesca Di Garbo, Bruno
+Olsson and Bernhard Wälchli, 15–52. Berlin: Language Science Press. DOI:
+10.5281/zenodo.3462756.
+AUDRING, JENNY. 2023. Gender Systems in Germanic. The Oxford Encyclopedia of Germanic
+Languages, ed. by Sebastian Kürschner and Antje Dammel. Oxford: Oxford University Press.
+[to appear]
+AUGST, GERHARD. 1975. Untersuchungen zum Morpheminventar der deutschen
+Gegenwartssprache. Forschungsberichte des Instituts für deutsche Sprache Mannheim 25.
+Tübingen: Gunter Narr.
+BAAYEN, R. HARALD; RICHARD PIEPENBROCK; and LEON GULIKERS. 1995. The CELEX lexical
+database (CD-ROM), Linguistic Data Consortium, University of Pennsylvania, Philadelphia.
+BACH, EMMON; and ROBERT T. HARMS. 1972. How do languages get crazy rules? Linguistic
+change and generative theory, ed. by Robert P. Stockwell and Ronald K. S. Macauley, 1–21.
+Indiana University Press, Bloomington.
+BARONI, MARCO; GEORGIANA DINU; and GERMÁN KRUSZEWSK. 2014. Don’t count, predict! A
+systematic comparison of context-counting vs. context-predicting semantic vectors.
+Proceedings of the 52nd Annual Meeting of the Association for Computational Linguistics
+
+45
+
+(Volume 1: Long Papers), 238–47. Baltimore, Maryland: Association for Computational
+Linguistics.
+BASIRAT, ALI; MARC ALLASSONNIÈRE-TANG; and ALEKSANDRS BERDICEVSKIS. 2021. An
+empirical study on the contribution of formal and semantic features to the grammatical gender
+of nouns. Linguistics Vanguard 7.20200048.
+BENIAMINE, SACHA. 2018. Classifications flexionnelles. Étude quantitative des structures de
+paradigmes. Paris: Université Paris Diderot (Paris 7) dissertation.
+BENIAMINE, SACHA. 2021. One lexeme, many classes: Inflection class systems as lattices. Oneto-many relations in morphology, syntax, and semantics, ed. by Berthold Crysmann and
+Manfred Sailer, 23–51. Berlin: Language Science Press. DOI: 10.5281/zenodo. 4729789.
+BINANZER, ANJA 2017. Genus – Kongruenz und Klassifikation: Evidenzen aus dem
+Zweitspracherwerb des Deutschen. Berlin: De Gruyter.
+BIRKENES, MAGNUS BREDER; KLEOPATRA CHRONI; and JÜRG FLEISCHER. 2014. Genus- und
+Sexuskongruenz im Neuhochdeutschen: Ergebnisse einer Korpusuntersuchung zur narrativen
+Prosa des 17. bis 19. Jahrhunderts. Deutsche Sprache 42.1–24.
+BITTNER, DAGMAR. 1999. Gender classification and the inflectional system of German nouns.
+Gender in grammar and cognition, Part 1: Approaches to gender, ed. by Barbara Unterbeck,
+1–23. Berlin: Mouton de Gruyter.
+BLOOMFIELD, LEONARD. 1933. Language. New York: Holt, Rinehart and Winston.
+BOLEDA, GEMMA. 2020. Distributional semantics and linguistic theory. Annual Review of
+Linguistics 6.213–34.
+BONAMI, OLIVIER; and SACHA BENIAMINE. 2021. Leaving the stem by itself. All things
+morphology: Its independence and its interfaces, ed. by Sedigheh Moradi, Marcia Haag, Janie
+Rees-Miller and Andrija Petrovic, 81–98. Amsterdam: John Benjamins.
+BONAMI, OLIVIER; MATÍAS GUZMÁN NARANJO; and DELPHINE TRIBOUT. 2019. The role of
+morphology in gender assignment in French. Paper presented at the International Symposium
+of Morphology (ISMo 2019), Paris.
+BONAMI, OLIVIER; and MATTEO PELLEGRINI. 2022. Derivation predicting inflection. A
+quantitative study of the relation between derivation history and inflectional behavior in Latin.
+Studies in Language 46.753–92.
+
+46
+BRAUN, FRIEDERIKE; and GEOFFREY HAIG. 2010. When are German ‘girls’ feminine? How the
+semantics of age influences the grammar of gender agreement. Language in its socio-cultural
+context: New explorations in gendered, global and media uses, ed. by Markus Bieswanger,
+Heiko Motschenbacher and Susanne Mühleisen, 69–83. Frankfurt/Main: Peter Lang.
+BREIMAN, LEO. 2001. Random forests. Machine Learning 45.5–32.
+BRESNAN, JOAN; ANNA CUENI; TATIANA NIKITINA; and R. HARALD BAAYEN. 2007. Predicting the
+dative alternation. Cognitive Foundations of Interpretation 69–94.
+BRESNAN, JOAN; AND JENNIFER HAY. 2008. Gradient grammar: An effect of animacy on the
+syntax of give in New Zealand and American English. Lingua 118.245–59.
+BÜRKNER, PAUL-CHRISTIAN. 2017. brms: An R package for Bayesian multilevel models using
+Stan. Journal of Statistical Software 80.1–28.
+BYBEE, JOAN L. 1985. Morphology: A study of the relation between meaning and form. John
+Benjamins, Amsterdam.
+BYBEE, JOAN L.; and DAN I. SLOBIN. 1982. Rules and schemas in the development and use of the
+English past tense. Language 58.265–89.
+CAHILL, LYNNE; and GERALD GAZDAR. 1999. German noun inflection. Journal of Linguistics 35.
+1–42.
+CALLIES, MARCUS. 2015. Effects of cross-linguistic influence in word formation. In Transfer
+Effects in Multilingual Language Development, ed. by Hagen Peukert, 129–45. Amsterdam:
+John Benjamins.
+CARPENTER, BOB; ANDREW GELMAN; MATTHEW HOFFMAN; DANIEL LEE; BEN GOODRICH;
+MICHAEL BETANCOURT; MARCUS BRUBAKER; JIQIANG GUO; PETER LI; and ALLEN RIDDELL.
+2017. Stan: A probabilistic programming language. Journal of statistical software 76.1–32.
+CHEN, TIANQI; TONG HE; MICHAEL BENESTY; VADIM KHOTILOVICH; YUAN TANG; and HYUNSU
+CHO. 2015. Xgboost: extreme gradient boosting. R package v0.4-2 https://cran.rproject.org/web/packages/xgboost/.
+COPOT, MARIA; TIMOTHEE MICKUS; and OLIVIER BONAMI. 2022. Idiosyncratic Frequency as a
+Measure of Derivation vs. Inflection. Journal of Language Modelling 10.193–240.
+CORBETT, GREVILLE G. 1986. Gender in German: a bibliography. Linguistische Berichte
+103.280–6.
+CORBETT, GREVILLE G. 1991. Gender. Cambridge: Cambridge University Press.
+
+47
+
+CORBETT, GREVILLE G. 2009. Canonical Inflectional Classes. Selected Proceedings of the 6th
+Décembrettes, ed. by Fabio Montermini, Gilles Boyé and Jesse Tseng, 1–11. Somerville, MA:
+Cascadilla Proceedings Project.
+CORBETT, GREVILLE G. 2012. Features. Cambridge: Cambridge University Press.
+CORBETT, GREVILLE G. 2013. Number of Genders. The World Atlas of Language Structures
+Online, ed. by Matthew S. Dryer and Martin Haspelmath. Leipzig: Max Planck Institute for
+Evolutionary Anthropology. (Available online at http://wals.info/chapter/30, Accessed on
+2023-05-25.)
+CORBETT, GREVILLE G.; and SEBASTIAN FEDDEN. 2016. Canonical gender. Journal of Linguistics
+52.495–531.
+CORBETT, GREVILLE G.; and NORMAN M. FRASER. 2000. Default genders. In: Barbara Unterbeck,
+Matti Rissanen, Terttu Nevalainen and Mirja Saari (eds) Gender in Grammar and Cognition
+(Trends in Linguistics: Studies and Monographs 124), 55-97. Berlin: Mouton de Gruyter.
+CORTEEN, EMMA CHARLOTTE. 2018. The assignment of grammatical gender in German: Testing
+Optimal Gender Assignment Theory. Cambridge: University of Cambridge dissertation.
+CULBERTSON, JENNIFER; ANNIE GAGLIARDI; and KENNY SMITH. 2017. Competition between
+phonological and semantic cues in noun class learning. Journal of Memory and Language
+92.343–58.
+CULBERTSON, JENNIFER; HANNA JARVINEN; FRANCES HAGGARTY; and KENNY SMITH. 2019.
+Children’s sensitivity to phonological and semantic cues during noun class learning: Evidence
+for a phonological bias. Language 95.268–93.
+DAELEMANS, W.; J. ZAVREL; K. VAN DER SLOOT; and A. VAN DEN BOSCH. 1998. TiMBL: Tilburg
+Memory-Based Learner. Universiteit van Tilburg.
+https://research.tilburguniversity.edu/en/publications/timbl-tilburg-memory-based-learnerversion-10-reference-guide.
+DYE, MELODY; PETAR MILIN; RICHARD FUTRELL; and MICHAEL RAMSCAR. 2017. A functional
+theory of gender paradigms. Morphological paradigms and functions, ed. by Ferenc Kiefer,
+James Blevins & Huba Bartos, 212–39. Leiden: Brill.
+DURIEUX, GERT; WALTER DAELEMANS; and STEVEN GILLIS. 2000. On the arbitrariness of lexical
+categories. Computational linguistics in the Netherlands 1998, 19-35. Leiden: Brill.
+
+48
+
+DYKSTRA-PRUIM, PENNYLYN. 2003. L2 acquisition of German plurals: How students form them
+and textbooks teach them. Die Unterrichtspraxis/Teaching German 36.43–55.
+EDDINGTON, DAVID. 2002. Spanish gender assignment in an analogical framework. Journal of
+Quantitative Linguistics 9.49–75.
+ENGER, HANS-OLAV. 2009. The role of core and non-core semantic rules in gender assignment.
+Lingua 119.1281–99.
+EVANS, NICHOLAS. 2003. Bininj Gun-wok: A pan-dialectal grammar of Mayali, Kunwinjku and
+Kune. 2 vols. Canberra: Pacific Linguistics. https://openresearchrepository.anu.edu.au/handle/1885/53188.
+EVANS, NICHOLAS; DUNSTAN BROWN; and GREVILLE G. CORBETT. 2002. The semantics of
+gender in Mayali: Partially parallel systems and formal implementation. Language 78.111–55.
+[Reprinted 2019 in: Language Volume 95, Number S1, 2019: Indigenous Languages: 21stCentury Perspectives: https://muse.jhu.edu/issue/41644.]
+FAHLBUSCH, FABIAN; DAMARIS NÜBLING. 2014. Der Schauinsland – die Mobiliar – das Turm.
+Das referentielle Genus bei Eigennamen und seine Genese. Beiträge zur Namensforschung
+49.245–288.
+FIRTH, JOHN R. 1957. Modes of meaning. Papers in Linguistics, 1934-1951, 190–215. Oxford:
+Oxford University Press.
+FLEISCHER, WOLFGANG; and IRMHILD BARZ. 2012. Wortbildung der deutschen
+Gegenwartssprache. 4th ed. Berlin: Walter de Gruyter.
+FRASER, NORMAN M.; and GREVILLE G. CORBETT. 1995. Gender, animacy and declensional class
+assignment: a unified account for Russian. Yearbook of Morphology 1994, ed. by Geert Booij
+and Jaap van Marle, 123–50. Dordrecht: Kluwer.
+GUZMÁN NARANJO, MATÍAS. 2019. Analogical classification in formal grammar. Berlin:
+Language Science Press. https://doi.org/10.5281/zenodo.3191825.
+GUZMÁN NARANJO, MATÍAS. 2020. Analogy, complexity and predictability in the Russian
+nominal inflection system. Morphology 30.219–62.
+GUZMÁN NARANJO, MATÍAS and LAURA BECKER. 2021. Coding efficiency in nominal inflection:
+expectedness and type frequency effects. Linguistics Vanguard 7, s3, article number
+20190075. https://doi.org/10.1515/lingvan-2019-0075.
+
+49
+
+GUZMÁN NARANJO, MATÍAS; and OLIVIER BONAMI. 2021a. Overabundance and inflectional
+classification: Quantitative evidence from Czech. Glossa: a journal of general linguistics,
+6.1–31.
+GUZMÁN NARANJO, MATÍAS; and OLIVIER BONAMI. 2021b. An analogical approach to the
+typology of inflectional complexity. Presentation at: 5thAmerican International Morphology
+Meeting. Ohio State University.
+HAJIBAYOVA LALA. 2013. Basic-level categories: A review. Journal of Information Science
+39.676–87. DOI: 10.1177/0165551513481443.
+HARRIS, ZELLIG S. 1954. Distributional structure. Word 10.146–62.
+HEITMEIER, MARIA, YU-YING CHUANG, SETH D. AXEN, & R. HARALD BAAYEN. 2024. Frequency
+effects in linear discriminative learning. Frontiers in Human Neuroscience 17.1242720. DOI:
+https://doi.org/10.3389/fnhum.2023.1242720.
+HOCKETT, CHARLES F. 1958. A course in modern linguistics. New York: Macmillan.
+JANDA, LAURA A. 2019. Quantitative perspectives in Cognitive Linguistics. Review of Cognitive
+Linguistics 17.7–28.
+KIBRIK, ALEKSANDR E. (ed.) 2001. Bagvalinskij jazyk: grammatika: teksty: slovari [Bagvalal:
+Grammar, texts, dictionaries]. Moscow: Nasledie. [co-editors K. I. Kazenin, E. A. Ljutikova
+and S. G. Tatevosov.]
+KÖPCKE, KLAUS-MICHAEL. 1982. Untersuchungen zum Genussystem der deutschen
+Gegenwartssprache. Tübingen: Niemeyer.
+KÖPCKE, KLAUS-MICHAEL; and DAVID A. ZUBIN. 1983. Die kognitive Organisation der
+Genuszuweisung zu den einsilbigen Nomen der deutschen Gegenwartssprache. Zeitschrift für
+germanistische Linguistik 11.166–82.
+KÖPCKE, KLAUS-MICHAEL; and DAVID A. ZUBIN. 1984. Sechs Prinzipien für die
+Genuszuweisung im Deutschen. Ein Beitrag zur natürlichen Klassifikation. Linguistische
+Berichte 93.26–50.
+KÖPCKE, KLAUS-MICHAEL; and DAVID A. ZUBIN. 1996. Prinzipien für Genuszuweisung im
+Deutschen. Deutsch-typologisch. Jahrbuch des Instituts für Deutsche Sprache 1995, ed. by
+Ewald Lang and Gisela Zifonun, 473–91. Berlin: De Gruyter Mouton.
+
+50
+
+KÖPCKE, KLAUS-MICHAEL; and DAVID A. ZUBIN. 2005. Nominalphrasen ohne lexikalischen
+Kopf – Zur Bedeutung des Genus für die Organisation des mentalen Lexikons am Beispiel der
+Autobezeichnungen im Deutschen. Zeitschrift für Sprachwissenschaft 24.93–122.
+KÖPCKE, KLAUS-MICHAEL; and DAVID A. ZUBIN. 2009. Genus. Handbuch zur Morphologie, ed.
+by Elke Hentschel and Petra M. Vogel, 132–54. Berlin: de Gruyter.
+KÖPCKE, KLAUS-MICHAEL; KLAUS-UWE PANTHER; and DAVID A. ZUBIN. 2010. Motivating
+grammatical and conceptual gender agreement in German. Cognitive foundations of linguistic
+usage patterns, ed. by Hans-Jörg Schmid and Susanne Handl, 171–94. Berlin: de Gruyter.
+KRIFKA, MANFRED. 2009. Case syncretism in German feminines: Typological, functional and
+structural aspects. On inflection, ed. by Patrick O. Steinkrüger and Manfred Krifka, 141–72.
+Berlin: Mouton de Gruyter.
+KUPISCH, TANJA; MIRIAM GEISS; NATALIA MITROFANOVA; and MARIT WESTERGAARD. 2022.
+Structural and phonological cues for gender assignment in monolingual and bilingual children
+acquiring German. Glossa: a journal of general linguistics 7(1). DOI:
+https://doi.org/10.16995/glossa.5696.
+KUPISCH, TANJA; NATALIA MITROFANOVA; and MARIT WESTERGAARD. 2022. Phonological vs.
+natural gender cues in the acquisition of German by simultaneous and sequential bilinguals
+(German-Russian). Journal of Child Language 49(4).661-683. DOI:
+10.1017/S0305000921000039.
+KÜRSCHNER, SEBASTIAN; and DAMARIS NÜBLING. 2011. The interaction of gender and
+declension in Germanic languages. Folia Linguistica 45.355–88.
+LENCI, ALESSANDRO. 2008. Distributional semantics in linguistic and cognitive research. Rivista
+di Linguistica 20.1–31.
+LENCI, ALESSANDRO. 2018. Distributional Models of Word Meaning. Annual Review of
+Linguistics 4.151–171. DOI: 10.1146/annurev-linguistics-030514-125254.
+LEVSHINA, NATALIA. 2016. When variables align: A Bayesian multinomial mixed-effects model
+of English permissive constructions. Cognitive Linguistics 27.235–68.
+LEVSHINA, NATALIA. 2022. Corpus-based typology: applications, challenges and some solutions.
+Linguistic Typology 26.129–60. DOI: 10.1515/lingty-2020-0118.
+
+51
+
+MALKIEL, YAKOV. 1978. Derivational categories. Universals of Human Language: Word
+Structure, ed. by Joseph H. Greenberg, Charles A. Ferguson and Edith A. Moravcsik, 125–49.
+Stanford University Press, Stanford, CA.
+MARELLI, MARCO; and MARCO BARONI. 2015. Affixation in semantic space: Modeling
+morpheme meanings with compositional distributional semantics. Psychological Review
+122.485–515. DOI: 10.1037/a0039267.
+MATTHEWS, CLIVE A. 2005. French gender attribution on the basis of similarity: A comparison
+between AM and connectionist models. Journal of Quantitative Linguistics 12.262–96.
+MATTHEWS, CLIVE. 2010. On the nature of phonological cues in the acquisition of French gender
+categories: Evidence from instance-based learning models. Lingua 120.879–900.
+MIKOLOV, TOMAS; KAI CHEN; GREG CORRADO; and JEFFREY DEAN. 2013. Efficient estimation of
+word representations in vector space. CoRRabs/1301.3781.
+MILLS, ANNE E. 1986. The acquisition of gender: A study of English and German. Berlin:
+Springer.
+NASTASE, VIVI; and MARIUS POPESCU. 2009. What’s in a name? In some languages, grammatical
+gender. Proceedings of the 2009 conference on empirical methods in natural language
+processing, 1368–77.
+NESSET, TORE. 2003. Gender assignment in Ukrainian: language specific rules and universal
+principles. Poljarnyj Vestnik 6.71–85.
+OPITZ, ANDREAS; and THOMAS PECHMANN. 2016. Gender features in German: Evidence for
+underspecification. The Mental Lexicon 11.216–41. DOI: 10.1075/ml.11.2.03opi.
+PADÓ, SEBASTIAN; AURÉLIE HERBELOT; MAX KISSELEW; and JAN ŠNAJDER. 2016. Predictability
+of distributional semantics in derivational word formation. Proceedings of COLING 2016, the
+26th International Conference on Computational Linguistics, Technical Papers, 1285–96.
+PARKER, E. M.; and R. J. HAYWARD. 1985. An Afar-English-French dictionary (with
+grammatical notes in English). London: SOAS, University of London.
+PAVLOV, VLADIMIR. 1995. Die Deklination der deutschen Substantive. Synchronie und
+Diachronie. Frankfurt a. M.: Peter Lang.
+RICE, CURT. 2006. Optimizing gender. Lingua 116.1394–417.
+ROSCH, ELEANOR; CAROLYN MERVIS; WAYNE GRAY; DAVID JOHNSON; and PENNY BOYESBRAEM. 1976. Basic objects in natural categories. Cognitive Psychology 8.382–439.
+
+52
+
+SÁ-LEITE, ANA R., KARLOS LUNA, ANGELA TOMAZ, ISABEL FRAGA and MONTSERRAT
+COMESAÑA. 2022. The mechanisms underlying grammatical gender selection in language
+production: A meta-analysis of the gender congruency effect Cognition 224. DOI:
+10.1016/j.cognition.2022.105060.
+SCHÄFER, ROLAND. 2015. Processing and querying large web corpora with the COW14
+architecture. Proceedings of the 3rd Workshop on Challenges in the Management of Large
+Corpora (CMLC-3), ed. by Piotr Bański, Hanno Biber, Evelyn Breiteneder, Marc Kupietz,
+Harald Lüngen and Andreas Witt, 28–34. Mannheim: Institut für Deutsche Sprache.
+SCHÄFER, ROLAND. 2018. Einführung in die grammatische Beschreibung des Deutschen. 3rd
+edition. Berlin: Language Science Press.
+SCHÄFER, ROLAND; and FELIX BILDHAUER. 2012. Building large corpora from the web using a
+new efficient tool chain. Proceedings of the Eighth International Conference on Language
+Resources and Evaluation, 486–93.
+SCHUHMANN, KATHARINA S.; and LAURA CATHARINE SMITH. 2022. Practical Prosody: New
+Hope for Teaching German Plurals. Die Unterrichtspraxis/Teaching German 55.1–24. DOI:
+10.1111/tger.12192.
+SCHWICHTENBERG, BEATE; and NIELS O. SCHILLER. 2004. Semantic gender assignment
+regularities in German. Brain and Language, 90.326–37. DOI: 10.1016/S0093934X(03)00445-0.
+SKOUSEN, ROYAL. 1989. Analogical modeling of language. Dordrecht: Kluwer.
+SÖNNING, LUKAS; and VALENTIN WERNER. 2021. The replication crisis, scientific revolutions,
+and linguistics. Linguistics 95.1179–206.
+STEINMETZ, DONALD. 2006. Gender shifts in Germanic and Slavic: semantic motivation for
+neuter? Lingua 116(9).1418-1440. DOI: 10.1016/j.lingua.2004.06.014.
+STUMP, GREGORY. 2016. Inflectional paradigms: Content and form at the syntax-morphology
+interface. Cambridge: Cambridge University Press. doi:10.1017/CBO9781316105290.005.
+SYLVAIN, KAHANE; ZIQIAN PENG, and KIM GERDES. 2023. Word order flexibility: a typometric
+study. Proceedings of the Seventh International Conference on Dependency Linguistics
+(Depling, GURT/SyntaxFest 2023), 68–80, Washington, D.C., Association for Computational
+Linguistics.
+
+53
+
+SZAGUN, GISELA; BARBARA STUMPER; NINA SONDAG; and MELANIE FRANIK. 2007. The
+acquisition of gender marking by young German-speaking children: Evidence for learning
+guided by phonological regularities. Journal of Child Language 34.445–71. DOI:
+10.1017/S0305000906007951.
+TALAMO, LUIGI; and ANNEMARIE VERKERK. 2022. A new methodology for an old problem: A
+corpus-based typology of adnominal word order in European languages. Italian Journal of
+Linguistics 34.171–226.
+THORNTON, ANNA M. 2009. Constraining gender assignment rules. Language Sciences 31.14–32.
+THORNTON, ANNA M. 2019. Overabundance: A Canonical Typology. Competition in Inflection
+and Word-Formation (Studies in Morphology, volume 5), ed. by Franz Rainer, Francesco
+Gardani, Wolfgang U. Dressler and Hans Christian Luschützky, 223–258. Cham: Springer.
+TURNEY, PETER D. 2012. Domain and function: A dual-space model of semantic relations and
+com-positions. Journal of artificial intelligence research 44. 533–85.
+TVERSKY, BARBARA. 1986. Components and categorization. Categorization and noun
+classification, ed. by Colette Craig, 63–76. Amsterdam: John Benjamins.
+VARVARA, ROSSELLA; GABRIELLA LAPESA; and SEBASTIAN PADÓ. 2021. Grounding semantic
+transparency in context: A distributional semantic study on German event nominalizations.
+Morphology 31.409–46.
+VEEMAN, HARTGER. 2020. A comparative study of the grammatical gender systems of languages
+by means of analysing word embeddings. MA thesis, Uppsala University.
+WALTER, ANNIE; TOM FRITZSCHE; and BARBARA HÖHLE. 2021. Grammatical gender acquisition
+in German: Three-year-old children use phonological cues to learn the gender of novel nouns.
+Proceedings of the 45th Annual Boston University Conference on Language Development, ed.
+by Danielle Dionne and Lee-Ann Vidal Covas, 746–60. Somerville, MA: Cascadilla Press.
+WAUQUIER, MARINE. 2020. Confrontation des procédés dérivationnels et des catégories
+sémantiques dans les modèles distributionnels. Toulouse: University of Toulouse 2
+dissertation.
+WAUQUIER, MARINE; NABIL HATHOUT; and CÉCILE FABRE. 2020. Semantic discrimination of
+technicality in French nominalizations. Zeitschrift für Wortbildung/Journal of Word
+Formation 4.100–19.
+
+54
+
+WILLIAMS, ADINA; RYAN COTTERELL; LAWRENCE WOLF-SONKIN; DAMIÁN BLASI; and HANNA
+WALLACH. 2019. Quantifying the semantic core of gender systems. Proceedings of the 2019
+Conference on Empirical Methods in Natural Language Processing and the 9th International
+Joint Conference on Natural Language Processing (EMNLP-IJCNLP), 5734–5739, Hong
+Kong: Association for Computational Linguistics. https://aclanthology.org/D19-1577.pdf.
+WINTER, BODO. 2022. Mapping the landscape of exploratory and confirmatory data analysis in
+linguistics. Data Analytics in Cognitive Linguistics: Methods and Insights, ed. by Dennis Tay
+and Molly Xie Pan, 13–48. Berlin: De Gruyter.
+WU, SHIJIE; RYAN COTTERELL; and TIMOTHY O’DONNELL. 2019. Morphological irregularity
+correlates with frequency. Proceedings of the 57th Annual Meeting of the Association for
+Computational Linguistics, 5117–5126, Florence, Italy: Association for Computational
+Linguistics.
+ZHANG, ZHONGXING; GEERT MAYER; YVES DAUVILLIERS; GIUSEPPE PLAZZI; FABIO PIZZA; ROLF
+FRONCZEK; JOAN SANTAMARIA; MARKKU PARTINEN; SEBASTIAAN OVEREEM; ROSA PERAITAADRADOS; ANTONIO MARTINS DA SILVA; KAREL SONKA; RAFAEL DEL RIO-V ILLEGAS;
+RAPHAEL HEINZER; ALEKSANDRA WIERZBICKA; PETER YOUNG; BIRGIT HÖGL; CLAUDIO L.
+BASSETTI; MAURO MANCONI; EVA FEKETEOVA; JOHANNES MATHIS; TERESA PAIVA;
+FRANCESCA CANELLAS; MICHEL LECENDREUX; CHRISTIAN R BAUMANN; LUCIE BARATEAU;
+CAROLE PESENTI; ELENA ANTELMI; CARLES GAIG; ALEX IRANZO; LAURA LILLO-TRIGUERO;
+PABLO MEDRANO-MARTÍNEZ; JOSÉ HABA-RUBIO; CORINA GORBAN; GIANINA LUCA; GERT
+JAN LAMMERS; RAMIN KHATAMI. 2018. Exploring the clinical features of narcolepsy type 1
+versus narcolepsy type 2 from European Narcolepsy Network database with machine
+learning. Scientific reports 8.1–11. DOI: 10.1038/s41598-018-28840-w.
+ZUBIN, DAVID A.; and KLAUS-MICHAEL KÖPCKE. 1984. Affect classification in the German
+gender system. Lingua 63.41–96.
+
+55
+
+1
+
+We follow the Leipzig Glossing Rules https://www.eva.mpg.de/lingua/resources/glossing-
+
+rules.php; [ ] is for non-overt elements (as when information is inferred from the use of the bare
+stem); ( ) is for inherent, non-overt feature values; bold is used as a flag to draw attention to
+relevant characteristics of examples. Abbreviations comprise the Leipzig glosses and additions:
+3: third person, DEF: definite, DERIV: derivation, F: feminine, IC: inflection class, INF: infinitive,
+INFL: inflection, M: masculine, N: neuter, NOM:
+
+nominative, PHON: phonology, PL: plural, PRS:
+
+present, SBJ: subject, SEM: semantics, SG: singular.
+2
+
+The best-known example is Mädchen ‘girl’. This is a hybrid since its agreement pattern varies
+
+depending on the target. In the noun phrase agreement has to be neuter, the relative pronoun
+similarly has to be neuter, but an anaphoric pronoun can be either neuter es ‘it’ (syntactic
+agreement) or feminine sie ‘she’ (semantic agreement). The conditions on the choice are
+intriguing; for instance, the age of the referent is important, as Braun and Haig (2010)
+demonstrate (see also Köpcke et al. 2010 and Birkenes et al. 2014). For impressive data on the
+diachrony of German hybrids, see Birkenes et al. (2014).
+3
+
+If a predictor is restricted to a domain of application, its accuracy should be evaluated based on
+
+that domain. For example, the accuracy of a semantic predictor like “alcoholic beverages are
+masculine” should be calculated as the number of masculine alcoholic beverages divided by the
+total number of nouns that denote alcoholic beverages.
+4
+
+We are concerned here with core assignment principles. For minor semantic categories (‘crazy
+
+rules’), see §5.1.
+5
+
+The prediction goes in this direction, for two reasons: (i) predicting three genders from four
+
+inflection classes yields good results, while the reverse is much less successful; (ii) in use, any
+noun must be in some morphological form, but it may not require gender agreement. For the
+directionality argument, see especially Corbett & Fraser (2000), and Nesset (2003) on Ukrainian.
+6
+
+According to Thornton (2009:14), linguists use the metaphor of containers when talking about
+
+genders (allotting nouns to genders), and taking the opposite perspective, they speak of assigning
+genders to nouns so that they function correctly in the syntax. Both perspectives are valid. Here
+we take the latter perspective – given the lexical entry of a noun, we ask how its gender value is
+assigned.
+
+56
+
+7 Anaphoric
+
+pronouns agree with the antecedent in gender, so if the antecedent is the neuter noun
+
+Krokodil the anaphoric pronoun has to be es ‘it’. If one knows and wants to express the sex of a
+crocodile this needs to be marked clearly morphologically on the noun. For higher animals,
+derivation with -in is usually possible, e.g. Äffin ‘female ape, monkey’. Only then the feminine
+pronoun sie is possible. Typically, and for lower animals exclusively, a compound with männchen (for males) oder -weibchen (for females) is used, e.g. Ameisenmännchen ‘male ant’,
+Krokodilweibchen ‘female crocodile’, where er or sie, respectively, are possible in semantic
+agreement with the antecedent. The neuter pronoun es remains a possibility as well, since
+compounds in -männchen oder -weibchen are hybrids which require agreement in neuter gender
+in the noun phrase and the relative pronoun, but allow semantic agreement in the anaphoric and
+possessive pronouns.
+8 This
+
+is not originally a word derived with -schaft but a borrowing from Czech (pečet'), which
+
+has been remodeled according to the model of derived nouns with this suffix
+(https://www.dwds.de/wb/Petschaft).
+9
+
+What is orthographically represented as <e> in nominal suffixes is pronounced schwa.
+
+10
+
+German nouns are often quoted with the article as a sign of their gender. This is fine as a
+
+convenience, but can be misleading, since the definite article is only an indicator, albeit a
+powerful one. When we say that a noun is of, say, neuter gender, this means that it takes neuter
+agreement consistently, for all agreement targets rather than just for the article. For the role of
+the article, see Dye et al. (2017). Note too that there is a trade-off between articles and
+adjectives; in fuller phrases, if the article is uninformative, the adjectival inflection can provide
+the relevant contrast, e.g. ein neuer Film ‘a new film (M)’ vs. ein neues Buch (N) ‘a new book’,
+where the indefinite article ein does not differentiate gender whereas the adjective neuer vs.
+neues does.
+11
+
+In the past, the perspective on German gender and inflection class has tended rather to use
+
+gender to predict inflection (see, for example, Augst 1975: 24–36; Bittner 1999). More recently,
+one also finds approaches where both gender and inflection class have predictive value
+(Kürschner & Nübling 2011).
+12
+
+There are also many loanwords in the larger inflection classes. Thus being a loanword is not in
+
+itself a predictor of gender and so it is logical to work from the formal property of inflection.
+
+57
+
+13
+
+The noun Illustrierte (F) ‘magazine’ inflects like an adjective (-n/-n), so is different from
+
+Lampe. This applies to Heilige (F) ‘saint (F)’ as well, which unlike Illustrierte refers to a woman.
+14
+
+For availability, see http://celex.mpi.nl. We share the parts we are allowed so that others can
+
+reproduce our findings and take the analysis further.
+15
+
+Such rules are called ‘crazy’ rules by Enger (2009), ‘crazy’ in the sense that they are semantic
+
+gender assignment principles that are separate from the semantic core rules in a language (that is,
+males are masculine and females are feminine for German and many other languages). This
+usage is by analogy with crazy rules in phonology which are phonological rules without any
+phonetic grounding (Bach & Harms 1972). For experimental investigation of non-core semantic
+assignment, see Schwichtenberg & Schiller (2004).
+16 There
+
+are fascinating cases where the gender of a semantic cluster is not derived from a basic
+
+level term. For example, names of ships are feminine in German, e.g. die Titanic. It is clearly not
+the case that speakers are using an ‘invisible’ basic level term denoting the type of object the
+name is referring to in order to establish the gender, since das (Schlacht-)Schiff ‘(battle) ship’ is
+neuter in German, rather than feminine (see Köpcke & Zubin 2005: 118–19). And it is getting
+even more complicated. Ships can of course be named after men, which gives a situation where
+we have a man’s name vs the ship rule predicting feminine. Here the ship rule holds; for
+example, the battleship die Bismarck was named after Otto von Bismarck, and only feminine is
+possible; similarly, die Prinz Eugen is feminine.
+17
+
+The slightly different numbers for CELEX (types) in this table compared to ours are likely due
+
+to the fact that we excluded hybrids and also manually corrected some errors in CELEX which
+subtly changed gender proportions with respect to unmodified CELEX. For additional, mainly
+smaller, corpus counts, see Binanzer (2017: 51) and Corteen (2018:41).
+18
+
+Exceptions are TiMBL and to some degree AM, which also use distance-based approaches.
+
+19
+
+Code and the data which we are allowed to share will be published after the paper has been
+
+accepted for publication.
+20
+
+The cosine similarity ignores the magnitude of the vectors and only takes the angle between
+
+them into account. This is because we want to normalize for words of different frequencies.
+21
+
+Note that Word2Vec does not access word-internal structure, which means that the semantic
+
+representations do not know about the morphological or phonological makeup of the words. This
+is very desirable in the context of this study. Alternative vector architectures like FastText are
+
+58
+
+not an alternative in our case because they include information about the sublexical (i.e.
+phonological) structure of words.
+22
+
+For our vectors we used a window of 6 words, 5 iterations, 10 noise words for negative
+
+sampling and a vector size of 300. We did not discard any low frequency words from the corpus.
+We built the vectors using part of speech information.
+23
+
+We tested different numbers of nearest neighbors, and this number yielded consistently good
+
+results.
+24
+
+German distinguishes prefixes from particles in verb formation. Particles have main stress and
+
+allow for insertion of ge- to construct the participle, while prefixes do not. Particles are also
+syntactically separable, while prefixes are not (Fleischer & Barz 2012).
+25
+
+The relatively large number is because the dataset contains many borrowings with very
+
+idiosyncratic inflection classes with small membership. However, as noted earlier, there are also
+many loanwords in the larger inflection classes. It is therefore logical to work from the inflection
+class, since being a loanword is not in itself a predictor of gender.
+26
+
+We are using a Binomial Bayesian model. Uncertainty intervals are different in their
+
+interpretation from confidence intervals. They measure (as their name indicates) how certain we
+are about the estimates of interest. We fitted the Bayesian models using Stan (Carpenter et. al.
+2017) and BRMS (Bürkner 2017). A full description of the model is provided in the appendix.
+27
+
+The accuracy of the full model is 0.96 while the accuracy of the model PHON-SEM-INFL is
+
+0.959. The difference between these two numbers is likely to be due to random variation, given
+the uncertainty intervals (the blue whiskers) estimated by the model.
+28
+
+This might appear to go against the typological prediction BUT the core semantic rule works
+
+very well, for the appropriate nouns, while all nouns are subject to the phonological rules. This
+helps explain children’s early overuse of phonological predictors mentioned earlier.
+29
+
+These are the remaining nouns in the dataset (30,576 – 25,000). We use the same testing
+
+dataset for all models to make the predictions completely comparable across datasets.
+30 This
+
+is also a simplification of the mathematics behind gradient boosting trees.
+
+
